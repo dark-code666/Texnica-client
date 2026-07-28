@@ -1,0 +1,141 @@
+import React, { createContext, useState } from 'react';
+
+export const DataContext = createContext();
+
+export const DataProvider = ({ children }) => {
+
+  // ── USERS ──────────────────────────────────────────────
+  const [users, setUsers] = useState([
+    { id: 1, name: 'Juan Perez',     email: 'juan@zonafranca.com',   role: 'Administrador',          status: 'Activo' },
+    { id: 2, name: 'Maria Garcia',   email: 'maria@zonafranca.com',  role: 'Supervisor Producción',  status: 'Activo' },
+    { id: 3, name: 'Carlos Mendez',  email: 'carlos@zonafranca.com', role: 'Operario Corte',         status: 'Activo' },
+    { id: 4, name: 'Ana Lopez',      email: 'ana@zonafranca.com',    role: 'Operario Costura',       status: 'Inactivo' },
+  ]);
+
+  // ── ROLES ──────────────────────────────────────────────
+  const [roles, setRoles] = useState([
+    { id: 1, name: 'Administrador',         permissions: 'Todos' },
+    { id: 2, name: 'Supervisor Producción', permissions: 'Ver, Crear, Editar POs, Dashboard' },
+    { id: 3, name: 'Operario Corte',        permissions: 'Ver POs, Registrar Corte' },
+    { id: 4, name: 'Operario Costura',      permissions: 'Ver POs, Registrar Costura' },
+  ]);
+
+  // ── CLIENTS ────────────────────────────────────────────
+  const [clients, setClients] = useState([
+    { id: 1, name: 'Royal Apparel',     contact: 'Roywei Chen',   phone: '866-769-2517' },
+    { id: 2, name: 'Hanesbrands Inc',   contact: 'John Doe',      phone: '555-123-4567' },
+    { id: 3, name: 'Fruit of the Loom', contact: 'Sarah Johnson', phone: '800-321-4321' },
+    { id: 4, name: 'Gildan Activewear', contact: 'Michel Roy',    phone: '514-744-8000' },
+  ]);
+
+  // ── PURCHASE ORDERS ────────────────────────────────────
+  const [purchaseOrders, setPurchaseOrders] = useState([
+    {
+      id: 'Z1026811',
+      date: '2026-05-01',
+      required: '2026-06-15',
+      client: 'Royal Apparel',
+      status: 'En Proceso',
+      items: [
+        { id: 1, style: 'B1001', color: 'PFD White', size: 'XS', qty: 100,  uom: 'ea', item: 'B1001PFD-XS', desc: 'B1001 PFD White XS', price: 2.34, amount: 234.00 },
+        { id: 2, style: 'B1001', color: 'PFD White', size: 'S',  qty: 1100, uom: 'ea', item: 'B1001PFD-S',  desc: 'B1001 PFD White S',  price: 2.34, amount: 2574.00 },
+        { id: 3, style: 'B1001', color: 'PFD White', size: 'M',  qty: 2000, uom: 'ea', item: 'B1001PFD-M',  desc: 'B1001 PFD White M',  price: 2.34, amount: 4680.00 },
+        { id: 4, style: 'B1001', color: 'PFD White', size: 'L',  qty: 2600, uom: 'ea', item: 'B1001PFD-L',  desc: 'B1001 PFD White L',  price: 2.34, amount: 6084.00 },
+        { id: 5, style: 'B1001', color: 'PFD White', size: 'XL', qty: 2300, uom: 'ea', item: 'B1001PFD-XL', desc: 'B1001 PFD White XL', price: 2.34, amount: 5382.00 },
+        { id: 6, style: 'B1001', color: 'PFD White', size: '2X', qty: 1250, uom: 'ea', item: 'B1001PFD-2X', desc: 'B1001 PFD White 2X', price: 2.55, amount: 3187.50 },
+      ],
+      production: [
+        { size: 'XS', orderQty: 100,  cutTotal: 0,    sewTotal: 0,   shippedTotal: 0 },
+        { size: 'S',  orderQty: 1100, cutTotal: 446,  sewTotal: 0,   shippedTotal: 0 },
+        { size: 'M',  orderQty: 2000, cutTotal: 661,  sewTotal: 167, shippedTotal: 100 },
+        { size: 'L',  orderQty: 2600, cutTotal: 1304, sewTotal: 0,   shippedTotal: 0 },
+        { size: 'XL', orderQty: 2300, cutTotal: 978,  sewTotal: 237, shippedTotal: 0 },
+        { size: '2X', orderQty: 1250, cutTotal: 652,  sewTotal: 158, shippedTotal: 0 },
+      ],
+    },
+    {
+      id: 'Z1026812',
+      date: '2026-05-10',
+      required: '2026-07-01',
+      client: 'Hanesbrands Inc',
+      status: 'Pendiente',
+      items: [
+        { id: 1, style: 'T2000', color: 'Black', size: 'S',  qty: 500,  uom: 'ea', item: 'T2000BLK-S',  desc: 'T2000 Black S',  price: 3.10, amount: 1550.00 },
+        { id: 2, style: 'T2000', color: 'Black', size: 'M',  qty: 1200, uom: 'ea', item: 'T2000BLK-M',  desc: 'T2000 Black M',  price: 3.10, amount: 3720.00 },
+        { id: 3, style: 'T2000', color: 'Black', size: 'L',  qty: 1500, uom: 'ea', item: 'T2000BLK-L',  desc: 'T2000 Black L',  price: 3.10, amount: 4650.00 },
+        { id: 4, style: 'T2000', color: 'Black', size: 'XL', qty: 800,  uom: 'ea', item: 'T2000BLK-XL', desc: 'T2000 Black XL', price: 3.25, amount: 2600.00 },
+      ],
+      production: [
+        { size: 'S',  orderQty: 500,  cutTotal: 500,  sewTotal: 480, shippedTotal: 480 },
+        { size: 'M',  orderQty: 1200, cutTotal: 1200, sewTotal: 950, shippedTotal: 500 },
+        { size: 'L',  orderQty: 1500, cutTotal: 800,  sewTotal: 0,   shippedTotal: 0 },
+        { size: 'XL', orderQty: 800,  cutTotal: 0,    sewTotal: 0,   shippedTotal: 0 },
+      ],
+    },
+    {
+      id: 'Z1026813',
+      date: '2026-06-01',
+      required: '2026-08-15',
+      client: 'Fruit of the Loom',
+      status: 'Completado',
+      items: [
+        { id: 1, style: 'S3930', color: 'Navy', size: 'M',  qty: 600, uom: 'ea', item: 'S3930NAV-M',  desc: 'S3930 Navy M',  price: 2.80, amount: 1680.00 },
+        { id: 2, style: 'S3930', color: 'Navy', size: 'L',  qty: 800, uom: 'ea', item: 'S3930NAV-L',  desc: 'S3930 Navy L',  price: 2.80, amount: 2240.00 },
+        { id: 3, style: 'S3930', color: 'Navy', size: 'XL', qty: 400, uom: 'ea', item: 'S3930NAV-XL', desc: 'S3930 Navy XL', price: 2.95, amount: 1180.00 },
+      ],
+      production: [
+        { size: 'M',  orderQty: 600, cutTotal: 600, sewTotal: 600, shippedTotal: 600 },
+        { size: 'L',  orderQty: 800, cutTotal: 800, sewTotal: 800, shippedTotal: 800 },
+        { size: 'XL', orderQty: 400, cutTotal: 400, sewTotal: 400, shippedTotal: 400 },
+      ],
+    },
+  ]);
+
+  // ── FABRIC DATA ────────────────────────────────────────
+  const [fabricData, setFabricData] = useState([
+    // PO Z1026811
+    { id: 1,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'XS', purchased: 500,  quality: 'Aprobado',  cut: 0 },
+    { id: 2,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'S',  purchased: 850,  quality: 'Aprobado',  cut: 446 },
+    { id: 3,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'M',  purchased: 1200, quality: 'Aprobado',  cut: 661 },
+    { id: 4,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'L',  purchased: 1800, quality: 'Aprobado',  cut: 1304 },
+    { id: 5,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'XL', purchased: 1500, quality: 'Aprobado',  cut: 978 },
+    { id: 6,  po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: '2X', purchased: 900,  quality: 'Pendiente', cut: 0 },
+    // PO Z1026812
+    { id: 7,  po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'S',  purchased: 600,  quality: 'Aprobado', cut: 500 },
+    { id: 8,  po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'M',  purchased: 1400, quality: 'Aprobado', cut: 1200 },
+    { id: 9,  po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'L',  purchased: 1800, quality: 'Aprobado', cut: 800 },
+    { id: 10, po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'XL', purchased: 950,  quality: 'Pendiente', cut: 0 },
+    // PO Z1026813
+    { id: 11, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'M',  purchased: 700,  quality: 'Aprobado', cut: 600 },
+    { id: 12, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'L',  purchased: 950,  quality: 'Aprobado', cut: 800 },
+    { id: 13, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'XL', purchased: 480,  quality: 'Aprobado', cut: 400 },
+  ]);
+
+  // ── ACTIONS ────────────────────────────────────────────
+  const addUser    = (u) => setUsers([...users,    { ...u, id: Date.now(), status: 'Activo' }]);
+  const addRole    = (r) => setRoles([...roles,    { ...r, id: Date.now() }]);
+  const addClient  = (c) => setClients([...clients, { ...c, id: Date.now() }]);
+  const addPO      = (po) => {
+    const newPO = {
+      ...po,
+      status: 'Pendiente',
+      production: po.items.map(item => ({
+        size:         item.size || item.desc,
+        orderQty:     item.qty,
+        cutTotal:     0,
+        sewTotal:     0,
+        shippedTotal: 0,
+      })),
+    };
+    setPurchaseOrders([...purchaseOrders, newPO]);
+  };
+
+  return (
+    <DataContext.Provider value={{
+      users,    roles,    clients,    purchaseOrders, fabricData,
+      addUser,  addRole,  addClient,  addPO,
+    }}>
+      {children}
+    </DataContext.Provider>
+  );
+};

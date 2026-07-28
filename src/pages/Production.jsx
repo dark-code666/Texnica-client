@@ -1,0 +1,79 @@
+import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DataContext } from '../context/DataContext';
+import { 
+  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+  Button, Chip 
+} from '@mui/material';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import AddIcon from '@mui/icons-material/Add';
+
+const Production = () => {
+  const navigate = useNavigate();
+  const { purchaseOrders } = useContext(DataContext);
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom color="primary.main" fontWeight="bold">
+        Módulo de Producción
+      </Typography>
+      
+      <Paper elevation={2} sx={{ p: 3, borderTop: 4, borderColor: 'primary.main' }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <InventoryIcon color="primary" />
+            <Typography variant="h6">Órdenes de Compra (POs)</Typography>
+          </Box>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/po/new')}>
+            Crear PO
+          </Button>
+        </Box>
+        
+        <TableContainer>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: 'primary.light' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>PO Number</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Cliente</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Fecha Orden</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Fecha Requerida</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Estado</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {purchaseOrders.map(po => (
+                <TableRow key={po.id} hover>
+                  <TableCell>{po.id}</TableCell>
+                  <TableCell>{po.client}</TableCell>
+                  <TableCell>{po.date}</TableCell>
+                  <TableCell>{po.required}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={po.status} 
+                      size="small" 
+                      color={po.status === 'En Proceso' ? 'primary' : 'success'} 
+                      variant="outlined" 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button size="small" variant="outlined" onClick={() => navigate(`/po/${po.id}`)}>
+                      Ver Detalle
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {purchaseOrders.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">No hay órdenes de compra registradas.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
+  );
+};
+
+export default Production;
