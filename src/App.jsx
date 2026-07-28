@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { HashRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -111,7 +111,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <DataProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
@@ -125,7 +125,7 @@ function App() {
               <Route path="po/demo" element={<PurchaseOrder />} />
             </Route>
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </DataProvider>
     </ThemeProvider>
   );
