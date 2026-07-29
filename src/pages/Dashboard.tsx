@@ -5,26 +5,23 @@ import {
   TableHead, TableRow, Tabs, Tab, Chip, MenuItem, Select, FormControl, InputLabel,
 } from '@mui/material';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-const balanceCell = (value, positive = false) => ({
+const balanceCell = (value: number, positive = false) => ({
   fontWeight: 'bold',
   color: value === 0 ? 'text.secondary' : (positive ? (value > 0 ? 'success.main' : 'error.main') : (value < 0 ? 'error.main' : 'success.main')),
 });
 
-const hd = (label, bg, color = 'primary.main') => (
+const hd = (label: string, bg: string, color = 'primary.main') => (
   <TableCell align="center"
     sx={{ bgcolor: bg, fontWeight: 'bold', color, border: '1px solid #e0e0e0', whiteSpace: 'nowrap' }}>
     {label}
   </TableCell>
 );
 
-// ── component ─────────────────────────────────────────────────────────────────
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const { purchaseOrders, fabricData } = useContext(DataContext);
-  const [tab, setTab] = useState(0);
-  const [selectedPO, setSelectedPO] = useState('ALL');
+  const [tab, setTab] = useState<number>(0);
+  const [selectedPO, setSelectedPO] = useState<string | 'ALL'>('ALL');
 
-  // ── WIP data ──────────────────────────────────────────
   const wipRows = purchaseOrders
     .filter(po => selectedPO === 'ALL' || po.id === selectedPO)
     .flatMap(po =>
@@ -48,10 +45,9 @@ const Dashboard = () => {
     { orderQty: 0, cutTotal: 0, sewTotal: 0, shippedTotal: 0 }
   );
 
-  // ── Fabric data ───────────────────────────────────────
   const fabricRows = fabricData.filter(r => selectedPO === 'ALL' || r.po === selectedPO);
 
-  const fabricGrouped = fabricRows.reduce((acc, row) => {
+  const fabricGrouped = fabricRows.reduce((acc: Record<string, any[]>, row) => {
     if (!acc[row.po]) acc[row.po] = [];
     acc[row.po].push(row);
     return acc;
@@ -59,15 +55,14 @@ const Dashboard = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom color="primary.main" fontWeight="bold">
+      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
         Dashboard General
       </Typography>
 
       <Paper elevation={3} sx={{ overflow: 'hidden', borderTop: 4, borderColor: 'primary.main' }}>
 
-        {/* ── Header: Tabs + PO filter ── */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', px: 2 }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} indicatorColor="primary" textColor="primary">
+          <Tabs value={tab} onChange={(_, v) => setTab(v as number)} indicatorColor="primary" textColor="primary">
             <Tab label="Seguimiento WIP (Órdenes)" sx={{ fontWeight: 'bold' }} />
             <Tab label="Control de Tela (Materia Prima)" sx={{ fontWeight: 'bold' }} />
           </Tabs>
@@ -77,7 +72,7 @@ const Dashboard = () => {
             <Select
               label="Filtrar por PO"
               value={selectedPO}
-              onChange={e => setSelectedPO(e.target.value)}
+              onChange={e => setSelectedPO(e.target.value as string | 'ALL')}
             >
               <MenuItem value="ALL">Todos los POs</MenuItem>
               {purchaseOrders.map(po => (
@@ -89,13 +84,10 @@ const Dashboard = () => {
           </FormControl>
         </Box>
 
-        {/* ══════════════════════════════════════════════════════
-            TAB 1 — WIP
-        ══════════════════════════════════════════════════════ */}
         {tab === 0 && (
           <Box>
-            <Box p={2} borderBottom={1} borderColor="grey.200" display="flex" gap={1} alignItems="center">
-              <Typography variant="h6" color="primary.main">Seguimiento de Órdenes (WIP)</Typography>
+              <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ color: 'primary.main' }}>Seguimiento de Órdenes (WIP)</Typography>
               <Chip label={`${purchaseOrders.filter(p => selectedPO === 'ALL' || p.id === selectedPO).length} PO(s)`} size="small" color="primary" />
             </Box>
 
@@ -144,7 +136,7 @@ const Dashboard = () => {
                         <TableCell align="center">{row.first ? row.po     : ''}</TableCell>
                         <TableCell align="center">{row.first ? row.client : ''}</TableCell>
                         <TableCell align="center">
-                          <Box display="flex" justifyContent="space-between" gap={1}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
                             <span>{row.size}</span>
                             <strong>{row.orderQty}</strong>
                           </Box>
@@ -159,7 +151,6 @@ const Dashboard = () => {
                     );
                   })}
 
-                  {/* Sub-total */}
                   {wipRows.length > 0 && (
                     <TableRow sx={{ bgcolor: '#f1f5f9' }}>
                       <TableCell colSpan={4} align="right" sx={{ fontWeight: 'bold', pr: 2 }}>SUB-TOTAL</TableCell>
@@ -178,13 +169,10 @@ const Dashboard = () => {
           </Box>
         )}
 
-        {/* ══════════════════════════════════════════════════════
-            TAB 2 — TELA
-        ══════════════════════════════════════════════════════ */}
         {tab === 1 && (
           <Box>
-            <Box p={2} borderBottom={1} borderColor="grey.200" display="flex" gap={1} alignItems="center">
-              <Typography variant="h6" color="primary.main">Control de Tela y Corte por PO</Typography>
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography variant="h6" sx={{ color: 'primary.main' }}>Control de Tela y Corte por PO</Typography>
               <Chip label={`${fabricRows.length} registro(s)`} size="small" color="primary" />
             </Box>
 
@@ -250,7 +238,6 @@ const Dashboard = () => {
                             </TableRow>
                           );
                         })}
-                        {/* Sub-total per PO */}
                         <TableRow sx={{ bgcolor: '#f1f5f9' }}>
                           <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold', pr: 2 }}>
                             SUB-TTL {poNum}

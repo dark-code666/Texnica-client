@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Toolbar, Typography, Box, Collapse
+  Toolbar, Typography, Box, Collapse, SxProps, Theme
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -14,24 +14,27 @@ import BusinessIcon from '@mui/icons-material/Business';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
+interface SidebarProps {
+  mobileOpen: boolean;
+  handleDrawerToggle: () => void;
+  drawerWidth: number;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const [adminOpen, setAdminOpen] = useState(location.pathname.startsWith('/admin'));
+  const [adminOpen, setAdminOpen] = useState<boolean>(location.pathname.startsWith('/admin'));
 
-  const isActive = (path) =>
-    path === '/'
-      ? location.pathname === '/'
-      : location.pathname === path;
+  const isActive = (path: string) =>
+    path === '/' ? location.pathname === '/' : location.pathname === path;
 
-  const itemStyle = (active) => ({
+  const itemStyle = (active: boolean): SxProps<Theme> => ({
     backgroundColor: active ? 'rgba(255,255,255,0.15)' : 'transparent',
     borderLeft: active ? '4px solid white' : '4px solid transparent',
     '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
     pl: 2,
   });
 
-  const subItemStyle = (active) => ({
+  const subItemStyle = (active: boolean): SxProps<Theme> => ({
     backgroundColor: active ? 'rgba(255,255,255,0.15)' : 'transparent',
     borderLeft: active ? '4px solid rgba(255,255,255,0.8)' : '4px solid transparent',
     '&:hover': { backgroundColor: 'rgba(255,255,255,0.15)' },
@@ -56,7 +59,6 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
       </Toolbar>
 
       <List disablePadding>
-        {/* Dashboard */}
         <ListItem disablePadding>
           <ListItemButton
             component={NavLink}
@@ -68,7 +70,6 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
           </ListItemButton>
         </ListItem>
 
-        {/* Administración – collapsible */}
         <ListItem disablePadding>
           <ListItemButton
             onClick={() => setAdminOpen(!adminOpen)}
@@ -93,8 +94,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
                     {sub.icon}
                   </ListItemIcon>
                   <ListItemText
-                    primary={sub.text}
-                    primaryTypographyProps={{ fontSize: '0.85rem' }}
+                    primary={<Typography sx={{ fontSize: '0.85rem' }}>{sub.text}</Typography>}
                   />
                 </ListItemButton>
               </ListItem>
@@ -102,7 +102,6 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
           </List>
         </Collapse>
 
-        {/* Producción */}
         <ListItem disablePadding>
           <ListItemButton
             component={NavLink}
@@ -114,7 +113,6 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
           </ListItemButton>
         </ListItem>
 
-        {/* PO (Demo) */}
         <ListItem disablePadding>
           <ListItemButton
             component={NavLink}

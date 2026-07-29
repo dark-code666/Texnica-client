@@ -1,11 +1,86 @@
-import React, { createContext, useState } from 'react';
+import { createContext, useState, ReactNode } from 'react';
 
-export const DataContext = createContext();
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
 
-export const DataProvider = ({ children }) => {
+export interface Role {
+  id: number;
+  name: string;
+  permissions: string;
+}
 
+export interface Client {
+  id: number;
+  name: string;
+  contact: string;
+  phone: string;
+}
+
+export interface POItem {
+  id: number;
+  style?: string;
+  color?: string;
+  size?: string;
+  qty: number;
+  uom: string;
+  item: string;
+  desc: string;
+  price: number;
+  amount: number;
+}
+
+export interface POProduction {
+  size: string;
+  orderQty: number;
+  cutTotal: number;
+  sewTotal: number;
+  shippedTotal: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  date: string;
+  required: string;
+  client: string;
+  status: string;
+  items: POItem[];
+  production?: POProduction[];
+}
+
+export interface FabricData {
+  id: number;
+  po: string;
+  style: string;
+  color: string;
+  fabricType: string;
+  size: string;
+  purchased: number;
+  quality: string;
+  cut: number;
+}
+
+export interface DataContextType {
+  users: User[];
+  roles: Role[];
+  clients: Client[];
+  purchaseOrders: PurchaseOrder[];
+  fabricData: FabricData[];
+  addUser: (u: Omit<User, 'id' | 'status'>) => void;
+  addRole: (r: Omit<Role, 'id'>) => void;
+  addClient: (c: Omit<Client, 'id'>) => void;
+  addPO: (po: Omit<PurchaseOrder, 'status' | 'production'>) => void;
+}
+
+export const DataContext = createContext<DataContextType>({} as DataContextType);
+
+export const DataProvider = ({ children }: { children: ReactNode }) => {
   // ── USERS ──────────────────────────────────────────────
-  const [users, setUsers] = useState([
+  const [users, setUsers] = useState<User[]>([
     { id: 1, name: 'Juan Perez', email: 'juan@zonafranca.com', role: 'Administrador', status: 'Activo' },
     { id: 2, name: 'Maria Garcia', email: 'maria@zonafranca.com', role: 'Supervisor Producción', status: 'Activo' },
     { id: 3, name: 'Carlos Mendez', email: 'carlos@zonafranca.com', role: 'Operario Corte', status: 'Activo' },
@@ -13,7 +88,7 @@ export const DataProvider = ({ children }) => {
   ]);
 
   // ── ROLES ──────────────────────────────────────────────
-  const [roles, setRoles] = useState([
+  const [roles, setRoles] = useState<Role[]>([
     { id: 1, name: 'Administrador', permissions: 'Todos' },
     { id: 2, name: 'Supervisor Producción', permissions: 'Ver, Crear, Editar POs, Dashboard' },
     { id: 3, name: 'Operario Corte', permissions: 'Ver POs, Registrar Corte' },
@@ -21,7 +96,7 @@ export const DataProvider = ({ children }) => {
   ]);
 
   // ── CLIENTS ────────────────────────────────────────────
-  const [clients, setClients] = useState([
+  const [clients, setClients] = useState<Client[]>([
     { id: 1, name: 'Royal Apparel', contact: 'Roywei Chen', phone: '866-769-2517' },
     { id: 2, name: 'Hanesbrands Inc', contact: 'John Doe', phone: '555-123-4567' },
     { id: 3, name: 'Fruit of the Loom', contact: 'Sarah Johnson', phone: '800-321-4321' },
@@ -29,7 +104,7 @@ export const DataProvider = ({ children }) => {
   ]);
 
   // ── PURCHASE ORDERS ────────────────────────────────────
-  const [purchaseOrders, setPurchaseOrders] = useState([
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([
     {
       id: 'Z1026811',
       date: '2026-05-01',
@@ -92,43 +167,32 @@ export const DataProvider = ({ children }) => {
   ]);
 
   // ── FABRIC DATA ────────────────────────────────────────
-  const [fabricData, setFabricData] = useState([
-    // PO Z1026811
+  const [fabricData] = useState<FabricData[]>([
     { id: 1, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'XS', purchased: 500, quality: 'Aprobado', cut: 0 },
     { id: 2, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'S', purchased: 850, quality: 'Aprobado', cut: 446 },
     { id: 3, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'M', purchased: 1200, quality: 'Aprobado', cut: 661 },
     { id: 4, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'L', purchased: 1800, quality: 'Aprobado', cut: 1304 },
     { id: 5, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: 'XL', purchased: 1500, quality: 'Aprobado', cut: 978 },
     { id: 6, po: 'Z1026811', style: 'B1001', color: 'PFD White', fabricType: 'Algodón PFD White', size: '2X', purchased: 900, quality: 'Pendiente', cut: 0 },
-    // PO Z1026812
     { id: 7, po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'S', purchased: 600, quality: 'Aprobado', cut: 500 },
     { id: 8, po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'M', purchased: 1400, quality: 'Aprobado', cut: 1200 },
     { id: 9, po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'L', purchased: 1800, quality: 'Aprobado', cut: 800 },
     { id: 10, po: 'Z1026812', style: 'T2000', color: 'Black', fabricType: 'Jersey Negro 180g', size: 'XL', purchased: 950, quality: 'Pendiente', cut: 0 },
-    // PO Z1026813
     { id: 11, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'M', purchased: 700, quality: 'Aprobado', cut: 600 },
     { id: 12, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'L', purchased: 950, quality: 'Aprobado', cut: 800 },
     { id: 13, po: 'Z1026813', style: 'S3930', color: 'Navy', fabricType: 'Poliéster Navy 200g', size: 'XL', purchased: 480, quality: 'Aprobado', cut: 400 },
   ]);
 
   // ── ACTIONS ────────────────────────────────────────────
-  const addUser = (u) => setUsers([...users, { ...u, id: Date.now(), status: 'Activo' }]);
-  const addRole = (r) => setRoles([...roles, { ...r, id: Date.now() }]);
-  const addClient = (c) => setClients([...clients, { ...c, id: Date.now() }]);
-  const addPO = (po) => {
-    const newPO = {
-      ...po,
-      status: 'Pendiente',
-      production: po.items.map(item => ({
-        size: item.size || item.desc,
-        orderQty: item.qty,
-        cutTotal: 0,
-        sewTotal: 0,
-        shippedTotal: 0,
-      })),
-    };
-    setPurchaseOrders([...purchaseOrders, newPO]);
+  const addUser = (u: Omit<User, 'id' | 'status'>) => setUsers([...users, { ...u, id: Date.now(), status: 'Activo' }]);
+  const addRole = (r: Omit<Role, 'id'>) => setRoles([...roles, { ...r, id: Date.now() }]);
+  const addClient = (c: Omit<Client, 'id'>) => setClients([...clients, { ...c, id: Date.now() }]);
+  
+  const addPO = (po: Omit<PurchaseOrder, 'status' | 'production'>) => {
+    const newPO: PurchaseOrder = { ...po, production: [], status: 'Pendiente' };
+    setPurchaseOrders(prev => [...prev, newPO]);
   };
+  
 
   return (
     <DataContext.Provider value={{

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, FormEvent } from 'react';
 import { DataContext } from '../context/DataContext';
 import { 
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
@@ -10,28 +10,28 @@ import SecurityIcon from '@mui/icons-material/Security';
 import BusinessIcon from '@mui/icons-material/Business';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const Admin = () => {
+const Admin: React.FC = () => {
   const { users, roles, clients, addUser, addRole, addClient } = useContext(DataContext);
   
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrador' });
   const [newRole, setNewRole] = useState({ name: '', permissions: '' });
   const [newClient, setNewClient] = useState({ name: '', contact: '', phone: '' });
 
-  const handleAddUser = (e) => {
+  const handleAddUser = (e: FormEvent) => {
     e.preventDefault();
     if (!newUser.name || !newUser.email) return;
     addUser(newUser);
     setNewUser({ name: '', email: '', role: 'Administrador' });
   };
 
-  const handleAddRole = (e) => {
+  const handleAddRole = (e: FormEvent) => {
     e.preventDefault();
     if (!newRole.name || !newRole.permissions) return;
     addRole(newRole);
     setNewRole({ name: '', permissions: '' });
   };
 
-  const handleAddClient = (e) => {
+  const handleAddClient = (e: FormEvent) => {
     e.preventDefault();
     if (!newClient.name) return;
     addClient(newClient);
@@ -40,7 +40,7 @@ const Admin = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom color="primary.main" fontWeight="bold">
+      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
         Módulo de Administración
       </Typography>
       
@@ -49,7 +49,7 @@ const Admin = () => {
         {/* USERS SECTION */}
         <Accordion defaultExpanded elevation={2} sx={{ borderTop: 4, borderColor: 'primary.main' }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box display="flex" alignItems="center" gap={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PeopleIcon color="primary" />
               <Typography variant="h6">Usuarios</Typography>
             </Box>
@@ -71,7 +71,7 @@ const Admin = () => {
               <InputLabel>Rol</InputLabel>
               <Select
                 value={newUser.role} label="Rol"
-                onChange={e => setNewUser({...newUser, role: e.target.value})}
+                onChange={e => setNewUser({...newUser, role: e.target.value as string})}
               >
                 {roles.map(r => <MenuItem key={r.id} value={r.name}>{r.name}</MenuItem>)}
               </Select>
@@ -114,7 +114,7 @@ const Admin = () => {
         {/* ROLES SECTION */}
         <Accordion defaultExpanded elevation={2} sx={{ borderTop: 4, borderColor: 'primary.main' }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box display="flex" alignItems="center" gap={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SecurityIcon color="primary" />
               <Typography variant="h6">Roles y Permisos</Typography>
             </Box>
@@ -159,7 +159,7 @@ const Admin = () => {
         {/* CLIENTS SECTION */}
         <Accordion defaultExpanded elevation={2} sx={{ borderTop: 4, borderColor: 'primary.main' }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box display="flex" alignItems="center" gap={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <BusinessIcon color="primary" />
               <Typography variant="h6">Clientes</Typography>
             </Box>

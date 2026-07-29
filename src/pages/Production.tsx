@@ -1,34 +1,28 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataContext } from '../context/DataContext';
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Button, Chip 
+  Button, Chip
 } from '@mui/material';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AddIcon from '@mui/icons-material/Add';
 
-const Production = () => {
+const Production: React.FC = () => {
   const navigate = useNavigate();
-  const { purchaseOrders } = useContext(DataContext);
+  const { purchaseOrders } = React.useContext(DataContext);
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom color="primary.main" fontWeight="bold">
-        Módulo de Producción
-      </Typography>
-      
+      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>Módulo de Producción</Typography>
       <Paper elevation={2} sx={{ p: 3, borderTop: 4, borderColor: 'primary.main' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box display="flex" alignItems="center" gap={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <InventoryIcon color="primary" />
             <Typography variant="h6">Órdenes de Compra (POs)</Typography>
           </Box>
-          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/po/new')}>
-            Crear PO
-          </Button>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/po/new')}>Crear PO</Button>
         </Box>
-        
         <TableContainer>
           <Table size="small">
             <TableHead sx={{ backgroundColor: 'primary.light' }}>
@@ -49,17 +43,10 @@ const Production = () => {
                   <TableCell>{po.date}</TableCell>
                   <TableCell>{po.required}</TableCell>
                   <TableCell>
-                    <Chip 
-                      label={po.status} 
-                      size="small" 
-                      color={po.status === 'En Proceso' ? 'primary' : 'success'} 
-                      variant="outlined" 
-                    />
+                    <Chip label={po.status} size="small" color={po.status === 'En Proceso' ? 'primary' : 'success'} variant="outlined" />
                   </TableCell>
                   <TableCell>
-                    <Button size="small" variant="outlined" onClick={() => navigate(`/po/${po.id}`)}>
-                      Ver Detalle
-                    </Button>
+                    <Button size="small" variant="outlined" onClick={() => navigate(`/po/${po.id}`)}>Ver Detalle</Button>
                   </TableCell>
                 </TableRow>
               ))}
