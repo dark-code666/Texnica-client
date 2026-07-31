@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Toolbar, Typography, Box, Collapse, SxProps, Theme
+  Toolbar, Typography, Box, Collapse, SxProps, Theme, Divider,
+  Avatar,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -13,6 +14,8 @@ import SecurityIcon from '@mui/icons-material/Security';
 import BusinessIcon from '@mui/icons-material/Business';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { AuthContext } from '../context/AuthContext';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -22,6 +25,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useContext(AuthContext);
   const [adminOpen, setAdminOpen] = useState<boolean>(location.pathname.startsWith('/admin'));
 
   const isActive = (path: string) =>
@@ -50,31 +55,41 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
 
   const isAdminActive = location.pathname.startsWith('/admin');
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Get first letter of username for avatar
+  const avatarLetter = user?.userName?.charAt(0).toUpperCase() || 'U';
+
   const drawer = (
-    <Box sx={{ backgroundColor: 'primary.main', color: 'white', height: '100%' }}>
+    <Box
+      sx={{
+        backgroundColor: 'primary.main',
+        color: 'white',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
           Zona Franca ERP
         </Typography>
       </Toolbar>
 
-      <List disablePadding>
+      {/* Navigation items */}
+      <List disablePadding sx={{ flex: 1 }}>
         <ListItem disablePadding>
-          <ListItemButton
-            component={NavLink}
-            to="/"
-            sx={itemStyle(isActive('/'))}
-          >
+          <ListItemButton component={NavLink} to="/" sx={itemStyle(isActive('/'))}>
             <ListItemIcon sx={{ color: 'white' }}><DashboardIcon /></ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton
-            onClick={() => setAdminOpen(!adminOpen)}
-            sx={itemStyle(isAdminActive)}
-          >
+          <ListItemButton onClick={() => setAdminOpen(!adminOpen)} sx={itemStyle(isAdminActive)}>
             <ListItemIcon sx={{ color: 'white' }}><SettingsIcon /></ListItemIcon>
             <ListItemText primary="Administración" />
             {adminOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -103,27 +118,54 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         </Collapse>
 
         <ListItem disablePadding>
-          <ListItemButton
-            component={NavLink}
-            to="/production"
-            sx={itemStyle(isActive('/production'))}
-          >
+          <ListItemButton component={NavLink} to="/production" sx={itemStyle(isActive('/production'))}>
             <ListItemIcon sx={{ color: 'white' }}><FactoryIcon /></ListItemIcon>
             <ListItemText primary="Producción" />
           </ListItemButton>
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton
-            component={NavLink}
-            to="/po/demo"
-            sx={itemStyle(isActive('/po/demo'))}
-          >
+          <ListItemButton component={NavLink} to="/po/demo" sx={itemStyle(isActive('/po/demo'))}>
             <ListItemIcon sx={{ color: 'white' }}><ReceiptIcon /></ListItemIcon>
             <ListItemText primary="PO (Demo)" />
           </ListItemButton>
         </ListItem>
       </List>
+
+      {/* User info and logout at bottom */}
+      <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)' }} />
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.25)', width: 36, height: 36, mr: 1.5, fontSize: '1rem', fontWeight: 700 }}>
+            {avatarLetter}
+          </Avatar>
+          <Box sx={{ overflow: 'hidden' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }} noWrap>
+              {user?.userName || 'Usuario'}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.7rem' }} noWrap>
+              {user?.email || ''}
+            </Typography>
+          </Box>
+        </Box>
+
+        <ListItemButton
+          onClick={handleLogout}
+          sx={{
+            borderRadius: 2,
+            '&:hover': { backgroundColor: 'rgba(255,255,255,0.15)' },
+            px: 1.5,
+            py: 1,
+          }}
+        >
+          <ListItemIcon sx={{ color: 'rgba(255,255,255,0.85)', minWidth: 34 }}>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary={<Typography sx={{ fontSize: '0.875rem' }}>Cerrar sesión</Typography>}
+          />
+        </ListItemButton>
+      </Box>
     </Box>
   );
 
