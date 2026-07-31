@@ -36,12 +36,12 @@ const Register: React.FC = () => {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+      setError('Passwords do not match.');
       return;
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+      setError('Password must be at least 6 characters.');
       return;
     }
 
@@ -57,7 +57,7 @@ const Register: React.FC = () => {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        'Error al registrar el usuario.';
+        'Error registering user.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -119,10 +119,10 @@ const Register: React.FC = () => {
             <PersonAddOutlinedIcon sx={{ color: 'white', fontSize: 28 }} />
           </Box>
           <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
-            Crear Cuenta
+            Create Account
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)', mt: 0.5 }}>
-            ERP Zona Franca – Registro
+            TPCS Texnica Production Control System – Register
           </Typography>
         </Box>
 
@@ -135,7 +135,7 @@ const Register: React.FC = () => {
           )}
 
           <TextField
-            label="Nombre de usuario"
+            label="Username"
             type="text"
             fullWidth
             required
@@ -146,7 +146,7 @@ const Register: React.FC = () => {
           />
 
           <TextField
-            label="Correo electrónico"
+            label="Email"
             type="email"
             fullWidth
             required
@@ -157,26 +157,28 @@ const Register: React.FC = () => {
           />
 
           <TextField
-            label="Contraseña"
+            label="Password"
             type={showPassword ? 'text' : 'password'}
             fullWidth
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             sx={{ mb: 2.5 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
           <TextField
-            label="Confirmar contraseña"
+            label="Confirm Password"
             type={showPassword ? 'text' : 'password'}
             fullWidth
             required
@@ -201,16 +203,16 @@ const Register: React.FC = () => {
               },
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Crear Cuenta'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
           </Button>
 
           <Divider sx={{ my: 3 }} />
 
-          <Box textAlign="center">
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              ¿Ya tienes cuenta?{' '}
-              <Link component={RouterLink} to="/login" fontWeight={600} underline="hover">
-                Inicia sesión aquí
+              Already have an account?{' '}
+              <Link component={RouterLink} to="/login" sx={{ fontWeight: 600 }} underline="hover">
+                Sign in here
               </Link>
             </Typography>
           </Box>

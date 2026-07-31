@@ -10,6 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import FactoryIcon from '@mui/icons-material/PrecisionManufacturing';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PeopleIcon from '@mui/icons-material/People';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
 import SecurityIcon from '@mui/icons-material/Security';
 import BusinessIcon from '@mui/icons-material/Business';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -48,9 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
   });
 
   const adminSubItems = [
-    { text: 'Usuarios',        icon: <PeopleIcon fontSize="small" />,   path: '/admin/usuarios' },
-    { text: 'Roles y Permisos',icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
-    { text: 'Clientes',        icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
+    { text: 'Users',           icon: <PeopleIcon fontSize="small" />,   path: '/admin/usuarios' },
+    { text: 'Roles & Permissions',icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
+    { text: 'Clients',         icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
   ];
 
   const isAdminActive = location.pathname.startsWith('/admin');
@@ -75,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
     >
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-          Zona Franca ERP
+          TPCS Texnica Production Control System
         </Typography>
       </Toolbar>
 
@@ -91,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         <ListItem disablePadding>
           <ListItemButton onClick={() => setAdminOpen(!adminOpen)} sx={itemStyle(isAdminActive)}>
             <ListItemIcon sx={{ color: 'white' }}><SettingsIcon /></ListItemIcon>
-            <ListItemText primary="Administración" />
+            <ListItemText primary="Administration" />
             {adminOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </ListItemButton>
         </ListItem>
@@ -120,7 +121,14 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/production" sx={itemStyle(isActive('/production'))}>
             <ListItemIcon sx={{ color: 'white' }}><FactoryIcon /></ListItemIcon>
-            <ListItemText primary="Producción" />
+            <ListItemText primary="Production" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/warehouse" sx={itemStyle(isActive('/warehouse'))}>
+            <ListItemIcon sx={{ color: 'white' }}><WarehouseIcon /></ListItemIcon>
+            <ListItemText primary="Warehouse" />
           </ListItemButton>
         </ListItem>
 
@@ -141,7 +149,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
           </Avatar>
           <Box sx={{ overflow: 'hidden' }}>
             <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }} noWrap>
-              {user?.userName || 'Usuario'}
+              {user?.userName || 'User'}
             </Typography>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.7rem' }} noWrap>
               {user?.email || ''}
@@ -162,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText
-            primary={<Typography sx={{ fontSize: '0.875rem' }}>Cerrar sesión</Typography>}
+            primary={<Typography sx={{ fontSize: '0.875rem' }}>Logout</Typography>}
           />
         </ListItemButton>
       </Box>

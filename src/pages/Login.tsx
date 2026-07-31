@@ -44,7 +44,7 @@ const Login: React.FC = () => {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        'Error al iniciar sesión. Verifica tus credenciales.';
+        'Error logging in. Please verify your credentials.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -106,10 +106,10 @@ const Login: React.FC = () => {
             <LockOutlinedIcon sx={{ color: 'white', fontSize: 28 }} />
           </Box>
           <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
-            Bienvenido
+            Welcome
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)', mt: 0.5 }}>
-            ERP Zona Franca – Inicia sesión
+            TPCS Texnica Production Control System – Sign In
           </Typography>
         </Box>
 
@@ -122,7 +122,7 @@ const Login: React.FC = () => {
           )}
 
           <TextField
-            label="Nombre de usuario"
+            label="Username"
             type="text"
             fullWidth
             required
@@ -134,7 +134,7 @@ const Login: React.FC = () => {
           />
 
           <TextField
-            label="Contraseña"
+            label="Password"
             type={showPassword ? 'text' : 'password'}
             fullWidth
             required
@@ -142,14 +142,16 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             sx={{ mb: 3 }}
             autoComplete="current-password"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
 
@@ -169,16 +171,16 @@ const Login: React.FC = () => {
               },
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Iniciar Sesión'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
           </Button>
 
           <Divider sx={{ my: 3 }} />
 
-          <Box textAlign="center">
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              ¿No tienes cuenta?{' '}
-              <Link component={RouterLink} to="/register" fontWeight={600} underline="hover">
-                Regístrate aquí
+              Don't have an account?{' '}
+              <Link component={RouterLink} to="/register" sx={{ fontWeight: 600 }} underline="hover">
+                Register here
               </Link>
             </Typography>
           </Box>

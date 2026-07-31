@@ -8,44 +8,44 @@ import PeopleIcon from '@mui/icons-material/People';
 
 const AdminUsuarios: React.FC = () => {
   const { users, roles, addUser } = useContext(DataContext);
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrador' });
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrator' });
 
   const handleAddUser = (e: FormEvent) => {
     e.preventDefault();
     if (!newUser.name || !newUser.email) return;
     addUser(newUser);
-    setNewUser({ name: '', email: '', role: 'Administrador' });
+    setNewUser({ name: '', email: '', role: 'Administrator' });
   };
 
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <PeopleIcon color="primary" />
-        <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Usuarios</Typography>
+        <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Users</Typography>
       </Box>
 
       <Paper elevation={2} sx={{ p: 3, borderTop: 4, borderColor: 'primary.main' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>Agregar nuevo usuario</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>Add new user</Typography>
         <Box component="form" onSubmit={handleAddUser} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <TextField label="Nombre completo" size="small" required value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} sx={{ flexGrow: 1, minWidth: 200 }} />
+          <TextField label="Full Name" size="small" required value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} sx={{ flexGrow: 1, minWidth: 200 }} />
           <TextField label="Email" type="email" size="small" required value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} sx={{ flexGrow: 1, minWidth: 200 }} />
           <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Rol</InputLabel>
-            <Select label="Rol" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as string })}>
+            <InputLabel>Role</InputLabel>
+            <Select label="Role" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value as string })}>
               {roles.map(r => <MenuItem key={r.id} value={r.name}>{r.name}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button type="submit" variant="contained" color="primary">Nuevo Usuario</Button>
+          <Button type="submit" variant="contained" color="primary">New User</Button>
         </Box>
 
         <TableContainer>
           <Table size="small">
             <TableHead sx={{ backgroundColor: 'primary.light' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Nombre</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Email</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Rol</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Estado</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

@@ -14,25 +14,25 @@ const Production: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>Módulo de Producción</Typography>
+      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>Production Module</Typography>
       <Paper elevation={2} sx={{ p: 3, borderTop: 4, borderColor: 'primary.main' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <InventoryIcon color="primary" />
-            <Typography variant="h6">Órdenes de Compra (POs)</Typography>
+            <Typography variant="h6">Purchase Orders (POs)</Typography>
           </Box>
-          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/po/new')}>Crear PO</Button>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={() => navigate('/po/new')}>Create PO</Button>
         </Box>
         <TableContainer>
           <Table size="small">
             <TableHead sx={{ backgroundColor: 'primary.light' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>PO Number</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Cliente</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Fecha Orden</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Fecha Requerida</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Estado</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Client</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Order Date</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Required Date</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -43,16 +43,16 @@ const Production: React.FC = () => {
                   <TableCell>{po.date}</TableCell>
                   <TableCell>{po.required}</TableCell>
                   <TableCell>
-                    <Chip label={po.status} size="small" color={po.status === 'En Proceso' ? 'primary' : 'success'} variant="outlined" />
+                    <Chip label={po.status} size="small" color={po.status === 'In Process' ? 'primary' : 'success'} variant="outlined" />
                   </TableCell>
                   <TableCell>
-                    <Button size="small" variant="outlined" onClick={() => navigate(`/po/${po.id}`)}>Ver Detalle</Button>
+                    <Button size="small" variant="outlined" onClick={() => navigate(`/po/${po.id}`)}>View Details</Button>
                   </TableCell>
                 </TableRow>
               ))}
               {purchaseOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">No hay órdenes de compra registradas.</TableCell>
+                  <TableCell colSpan={6} align="center">No purchase orders registered.</TableCell>
                 </TableRow>
               )}
             </TableBody>

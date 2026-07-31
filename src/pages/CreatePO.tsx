@@ -87,7 +87,7 @@ const CreatePO: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!poData.client) { alert('Por favor selecciona un cliente'); return; }
+    if (!poData.client) { alert('Please select a client'); return; }
     addPO({ ...poData, items });
     navigate('/production');
   };
@@ -97,29 +97,29 @@ const CreatePO: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
       <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 1000, borderTop: 4, borderColor: 'primary.main' }}>
-        <Typography variant="h5" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>Crear Nueva Orden de Compra</Typography>
+        <Typography variant="h5" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>Create New Purchase Order</Typography>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'flex-start' }}>
             <Box sx={{ flexBasis: { xs: '100%', md: '33.3333%' } }}>
-              <TextField label="PO Number" value={poData.id} onChange={e => setPoData({ ...poData, id: e.target.value })} fullWidth required placeholder="Ej. Z1026811" />
+              <TextField label="PO Number" value={poData.id} onChange={e => setPoData({ ...poData, id: e.target.value })} fullWidth required placeholder="Ex. Z1026811" />
             </Box>
             <Box sx={{ flexBasis: { xs: '100%', md: '33.3333%' } }}>
-              <TextField label="Fecha Requerida" type="date" value={poData.required} onChange={e => setPoData({ ...poData, required: e.target.value })} required fullWidth />
+              <TextField label="Required Date" type="date" value={poData.required} onChange={e => setPoData({ ...poData, required: e.target.value })} required fullWidth />
             </Box>
             <Box sx={{ flexBasis: { xs: '100%', md: '33.3333%' } }}>
               <Box sx={{ position: 'relative' }}>
                 <Typography component="label" sx={{ position: 'absolute', top: -9, left: 12, bgcolor: 'white', px: 0.5, fontSize: '0.75rem', color: selectedOption ? '#0f4c81' : '#666', zIndex: 10, pointerEvents: 'none', lineHeight: 1, }}>
-                  Cliente *
+                  Client *
                 </Typography>
-                <Select options={clientOptions} value={selectedOption} onChange={(opt: any) => setPoData({ ...poData, client: opt ? opt.value : '' })} components={{ Option: ClientOption }} styles={selectStyles} placeholder="Buscar cliente..." isClearable noOptionsMessage={() => 'No se encontraron clientes'} />
+                <Select options={clientOptions} value={selectedOption} onChange={(opt: any) => setPoData({ ...poData, client: opt ? opt.value : '' })} components={{ Option: ClientOption }} styles={selectStyles} placeholder="Search client..." isClearable noOptionsMessage={() => 'No clients found'} />
               </Box>
             </Box>
 
             <Box sx={{ flexBasis: '100%' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2 }}>
-                <Typography variant="h6" sx={{ color: 'primary.main' }}>Detalle de Productos</Typography>
-                <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddItem}>Agregar Línea</Button>
+                <Typography variant="h6" sx={{ color: 'primary.main' }}>Product Details</Typography>
+                <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddItem}>Add Line</Button>
               </Box>
 
               <TableContainer component={Paper} variant="outlined">
@@ -174,7 +174,7 @@ const CreatePO: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button type="submit" variant="contained" color="primary" size="large" disabled={!poData.id || !poData.client}>Guardar Orden de Compra</Button>
+              <Button type="submit" variant="contained" color="primary" size="large" disabled={!poData.id || !poData.client}>Save Purchase Order</Button>
             </Box>
           </Box>
         </Box>

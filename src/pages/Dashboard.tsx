@@ -56,25 +56,25 @@ const Dashboard: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-        Dashboard General
+        General Dashboard
       </Typography>
 
       <Paper elevation={3} sx={{ overflow: 'hidden', borderTop: 4, borderColor: 'primary.main' }}>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', px: 2 }}>
           <Tabs value={tab} onChange={(_, v) => setTab(v as number)} indicatorColor="primary" textColor="primary">
-            <Tab label="Seguimiento WIP (Órdenes)" sx={{ fontWeight: 'bold' }} />
-            <Tab label="Control de Tela (Materia Prima)" sx={{ fontWeight: 'bold' }} />
+            <Tab label="WIP Tracking (Orders)" sx={{ fontWeight: 'bold' }} />
+            <Tab label="Fabric Control (Raw Material)" sx={{ fontWeight: 'bold' }} />
           </Tabs>
 
           <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Filtrar por PO</InputLabel>
+            <InputLabel>Filter by PO</InputLabel>
             <Select
-              label="Filtrar por PO"
+              label="Filter by PO"
               value={selectedPO}
               onChange={e => setSelectedPO(e.target.value as string | 'ALL')}
             >
-              <MenuItem value="ALL">Todos los POs</MenuItem>
+              <MenuItem value="ALL">All POs</MenuItem>
               {purchaseOrders.map(po => (
                 <MenuItem key={po.id} value={po.id}>
                   {po.id} — {po.client}
@@ -87,7 +87,7 @@ const Dashboard: React.FC = () => {
         {tab === 0 && (
           <Box>
               <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ color: 'primary.main' }}>Seguimiento de Órdenes (WIP)</Typography>
+                <Typography variant="h6" sx={{ color: 'primary.main' }}>Order Tracking (WIP)</Typography>
               <Chip label={`${purchaseOrders.filter(p => selectedPO === 'ALL' || p.id === selectedPO).length} PO(s)`} size="small" color="primary" />
             </Box>
 
@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
                   {wipRows.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={11} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                        No hay datos de producción para el filtro seleccionado.
+                        No production data for the selected filter.
                       </TableCell>
                     </TableRow>
                   )}
@@ -172,8 +172,8 @@ const Dashboard: React.FC = () => {
         {tab === 1 && (
           <Box>
             <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ color: 'primary.main' }}>Control de Tela y Corte por PO</Typography>
-              <Chip label={`${fabricRows.length} registro(s)`} size="small" color="primary" />
+              <Typography variant="h6" sx={{ color: 'primary.main' }}>Fabric and Cutting Control by PO</Typography>
+              <Chip label={`${fabricRows.length} record(s)`} size="small" color="primary" />
             </Box>
 
             <TableContainer sx={{ maxHeight: 'calc(100vh - 280px)' }}>
@@ -181,19 +181,19 @@ const Dashboard: React.FC = () => {
                 <TableHead>
                   <TableRow>
                     {hd('ORDER DETAILS',   '#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')}
-                    {hd('TELA COMPRADA',   '#e0f2fe', 'text.primary')} {hd('','#e0f2fe','text.primary')}
-                    {hd('CORTE',           '#d4edda', '#155724')}       {hd('','#d4edda','#155724')}
+                    {hd('FABRIC PURCHASED', '#e0f2fe', 'text.primary')} {hd('','#e0f2fe','text.primary')}
+                    {hd('CUTTING',          '#d4edda', '#155724')}       {hd('','#d4edda','#155724')}
                   </TableRow>
                   <TableRow>
                     {hd('Style No.',  '#dbeafe')}
                     {hd('Color',      '#dbeafe')}
                     {hd('PO Number',  '#dbeafe')}
-                    {hd('Tipo Tela',  '#dbeafe')}
+                    {hd('Fabric Type','#dbeafe')}
                     {hd('Size',       '#dbeafe')}
-                    {hd('Comprado (Yds)', '#e0f2fe', 'text.primary')}
-                    {hd('Calidad',        '#e0f2fe', 'text.primary')}
-                    {hd('Cortado',        '#d4edda', '#155724')}
-                    {hd('Pendiente',      '#d4edda', '#155724')}
+                    {hd('Purchased (Yds)', '#e0f2fe', 'text.primary')}
+                    {hd('Quality',         '#e0f2fe', 'text.primary')}
+                    {hd('Cut',             '#d4edda', '#155724')}
+                    {hd('Pending',         '#d4edda', '#155724')}
                   </TableRow>
                 </TableHead>
 
@@ -201,7 +201,7 @@ const Dashboard: React.FC = () => {
                   {Object.keys(fabricGrouped).length === 0 && (
                     <TableRow>
                       <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                        No hay registros de tela para el filtro seleccionado.
+                        No fabric records for the selected filter.
                       </TableCell>
                     </TableRow>
                   )}
@@ -227,7 +227,7 @@ const Dashboard: React.FC = () => {
                               <TableCell align="center">
                                 <Chip
                                   label={row.quality}
-                                  color={row.quality === 'Aprobado' ? 'success' : 'warning'}
+                                  color={row.quality === 'Approved' ? 'success' : 'warning'}
                                   size="small"
                                 />
                               </TableCell>

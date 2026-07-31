@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import  { useState, useContext } from 'react';
 import { HashRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
@@ -12,6 +12,7 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import AdminRoles from './pages/AdminRoles';
 import AdminClientes from './pages/AdminClientes';
 import Production from './pages/Production';
+import Warehouse from './pages/Warehouse';
 import PurchaseOrder from './pages/PurchaseOrder';
 import CreatePO from './pages/CreatePO';
 import Dashboard from './pages/Dashboard';
@@ -82,7 +83,7 @@ const Layout = () => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-            ERP Zona Franca
+            TPCS Texnica Production Control System
           </Typography>
           <IconButton color="primary">
             <NotificationsIcon />
@@ -92,7 +93,7 @@ const Layout = () => {
               {avatarLetter}
             </Avatar>
             <Typography variant="body2" sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}>
-              {user?.userName || 'Usuario'}
+              {user?.userName || 'User'}
             </Typography>
           </Box>
         </Toolbar>
@@ -136,6 +137,7 @@ function App() {
                   <Route path="admin/roles" element={<AdminRoles />} />
                   <Route path="admin/clientes" element={<AdminClientes />} />
                   <Route path="production" element={<Production />} />
+                  <Route path="warehouse" element={<Warehouse />} />
                   <Route path="po/new" element={<CreatePO />} />
                   <Route path="po/:id" element={<PurchaseOrder />} />
                   <Route path="po/demo" element={<PurchaseOrder />} />

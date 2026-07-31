@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 const Admin: React.FC = () => {
   const { users, roles, clients, addUser, addRole, addClient } = useContext(DataContext);
   
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrador' });
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrator' });
   const [newRole, setNewRole] = useState({ name: '', permissions: '' });
   const [newClient, setNewClient] = useState({ name: '', contact: '', phone: '' });
 
@@ -21,7 +21,7 @@ const Admin: React.FC = () => {
     e.preventDefault();
     if (!newUser.name || !newUser.email) return;
     addUser(newUser);
-    setNewUser({ name: '', email: '', role: 'Administrador' });
+    setNewUser({ name: '', email: '', role: 'Administrator' });
   };
 
   const handleAddRole = (e: FormEvent) => {
@@ -41,7 +41,7 @@ const Admin: React.FC = () => {
   return (
     <Box>
       <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-        Módulo de Administración
+        Administration Module
       </Typography>
       
       <Stack spacing={3}>
@@ -51,14 +51,14 @@ const Admin: React.FC = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PeopleIcon color="primary" />
-              <Typography variant="h6">Usuarios</Typography>
+              <Typography variant="h6">Users</Typography>
             </Box>
           </AccordionSummary>
           <AccordionDetails>
           
           <Box component="form" onSubmit={handleAddUser} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
             <TextField 
-              label="Nombre" size="small" variant="outlined"
+              label="Name" size="small" variant="outlined"
               value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})}
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
@@ -68,25 +68,25 @@ const Admin: React.FC = () => {
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
             <FormControl size="small" sx={{ flexGrow: 1, minWidth: 200 }}>
-              <InputLabel>Rol</InputLabel>
+              <InputLabel>Role</InputLabel>
               <Select
-                value={newUser.role} label="Rol"
+                value={newUser.role} label="Role"
                 onChange={e => setNewUser({...newUser, role: e.target.value as string})}
               >
                 {roles.map(r => <MenuItem key={r.id} value={r.name}>{r.name}</MenuItem>)}
               </Select>
             </FormControl>
-            <Button type="submit" variant="contained" color="primary">Nuevo Usuario</Button>
+            <Button type="submit" variant="contained" color="primary">New User</Button>
           </Box>
 
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ backgroundColor: 'primary.light' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Nombre</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Rol</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Estado</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Role</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -99,7 +99,7 @@ const Admin: React.FC = () => {
                       <Chip 
                         label={user.status} 
                         size="small" 
-                        color={user.status === 'Activo' ? 'success' : 'primary'} 
+                        color={user.status === 'Active' ? 'success' : 'primary'} 
                         variant="outlined" 
                       />
                     </TableCell>
@@ -116,31 +116,31 @@ const Admin: React.FC = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SecurityIcon color="primary" />
-              <Typography variant="h6">Roles y Permisos</Typography>
+              <Typography variant="h6">Roles & Permissions</Typography>
             </Box>
           </AccordionSummary>
           <AccordionDetails>
           
           <Box component="form" onSubmit={handleAddRole} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
             <TextField 
-              label="Nombre del Rol" size="small" variant="outlined"
+              label="Role Name" size="small" variant="outlined"
               value={newRole.name} onChange={e => setNewRole({...newRole, name: e.target.value})}
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
             <TextField 
-              label="Permisos (ej. Ver, Crear)" size="small" variant="outlined"
+              label="Permissions (e.g. View, Create)" size="small" variant="outlined"
               value={newRole.permissions} onChange={e => setNewRole({...newRole, permissions: e.target.value})}
               sx={{ flexGrow: 2, minWidth: 200 }}
             />
-            <Button type="submit" variant="contained" color="primary">Nuevo Rol</Button>
+            <Button type="submit" variant="contained" color="primary">New Role</Button>
           </Box>
 
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ backgroundColor: 'primary.light' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Rol</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Permisos</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Role</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Permissions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -161,37 +161,37 @@ const Admin: React.FC = () => {
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <BusinessIcon color="primary" />
-              <Typography variant="h6">Clientes</Typography>
+              <Typography variant="h6">Clients</Typography>
             </Box>
           </AccordionSummary>
           <AccordionDetails>
           
           <Box component="form" onSubmit={handleAddClient} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
             <TextField 
-              label="Nombre de la Empresa" size="small" variant="outlined" required
+              label="Company Name" size="small" variant="outlined" required
               value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})}
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
             <TextField 
-              label="Contacto" size="small" variant="outlined"
+              label="Contact" size="small" variant="outlined"
               value={newClient.contact} onChange={e => setNewClient({...newClient, contact: e.target.value})}
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
             <TextField 
-              label="Teléfono" size="small" variant="outlined"
+              label="Phone" size="small" variant="outlined"
               value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})}
               sx={{ flexGrow: 1, minWidth: 150 }}
             />
-            <Button type="submit" variant="contained" color="primary">Nuevo Cliente</Button>
+            <Button type="submit" variant="contained" color="primary">New Client</Button>
           </Box>
 
           <TableContainer>
             <Table size="small">
               <TableHead sx={{ backgroundColor: 'primary.light' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Empresa</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Contacto</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Teléfono</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Company</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Contact</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Phone</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

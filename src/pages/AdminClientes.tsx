@@ -21,25 +21,25 @@ const AdminClientes: React.FC = () => {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <BusinessIcon color="primary" />
-        <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Clientes</Typography>
+        <Typography variant="h5" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Clients</Typography>
       </Box>
 
       <Paper elevation={2} sx={{ p: 3, borderTop: 4, borderColor: 'primary.main' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>Agregar nuevo cliente</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>Add new client</Typography>
         <Box component="form" onSubmit={handleAddClient} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <TextField label="Nombre de la Empresa" size="small" required value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} sx={{ flexGrow: 2, minWidth: 200 }} />
-          <TextField label="Contacto" size="small" value={newClient.contact} onChange={e => setNewClient({ ...newClient, contact: e.target.value })} sx={{ flexGrow: 1, minWidth: 180 }} />
-          <TextField label="Teléfono" size="small" value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })} sx={{ flexGrow: 1, minWidth: 150 }} />
-          <Button type="submit" variant="contained" color="primary">Nuevo Cliente</Button>
+          <TextField label="Company Name" size="small" required value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} sx={{ flexGrow: 2, minWidth: 200 }} />
+          <TextField label="Contact" size="small" value={newClient.contact} onChange={e => setNewClient({ ...newClient, contact: e.target.value })} sx={{ flexGrow: 1, minWidth: 180 }} />
+          <TextField label="Phone" size="small" value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })} sx={{ flexGrow: 1, minWidth: 150 }} />
+          <Button type="submit" variant="contained" color="primary">New Client</Button>
         </Box>
 
         <TableContainer>
           <Table size="small">
             <TableHead sx={{ backgroundColor: 'primary.light' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Empresa</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Contacto</TableCell>
-                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Teléfono</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Company</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Contact</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Phone</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
