@@ -9,9 +9,19 @@ export interface User {
 }
 
 export interface Role {
-  id: number;
-  name: string;
-  permissions: string;
+  ID: number;
+  Name: string;
+  Description: string;
+  Active: boolean;
+  Permissions?: Permission[];
+}
+
+export interface Permission {
+  ID: number;
+  Name: string;
+  Description: string;
+  Module: string;
+  Active: boolean;
 }
 
 export interface Client {
@@ -89,10 +99,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   // ── ROLES ──────────────────────────────────────────────
   const [roles, setRoles] = useState<Role[]>([
-    { id: 1, name: 'Administrador', permissions: 'Todos' },
-    { id: 2, name: 'Supervisor Producción', permissions: 'Ver, Crear, Editar POs, Dashboard' },
-    { id: 3, name: 'Operario Corte', permissions: 'Ver POs, Registrar Corte' },
-    { id: 4, name: 'Operario Costura', permissions: 'Ver POs, Registrar Costura' },
+    { ID: 1, Name: 'Administrator', Description: 'Full system access', Active: true },
+    { ID: 2, Name: 'Manager', Description: 'Management level access', Active: true },
+    { ID: 3, Name: 'Operator', Description: 'Basic operational access', Active: true },
   ]);
 
   // ── CLIENTS ────────────────────────────────────────────
@@ -185,7 +194,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   // ── ACTIONS ────────────────────────────────────────────
   const addUser = (u: Omit<User, 'id' | 'status'>) => setUsers([...users, { ...u, id: Date.now(), status: 'Activo' }]);
-  const addRole = (r: Omit<Role, 'id'>) => setRoles([...roles, { ...r, id: Date.now() }]);
+  const addRole = (r: Omit<Role, 'ID'>) => setRoles([...roles, { ...r, ID: Date.now() }]);
   const addClient = (c: Omit<Client, 'id'>) => setClients([...clients, { ...c, id: Date.now() }]);
   
   const addPO = (po: Omit<PurchaseOrder, 'status' | 'production'>) => {

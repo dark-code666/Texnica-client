@@ -4,9 +4,12 @@ import { jwtDecode } from 'jwt-decode';
 export interface User {
   id: string | number;
   userName: string;
-  email: string;
+  userEmail: string;
+  email?: string;
   active: boolean;
+  mustChangePassword?: boolean;
 }
+
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +17,7 @@ interface AuthContextType {
   login: (token: string, user: any) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  setMustChangePassword: (value: boolean) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -22,6 +26,7 @@ export const AuthContext = createContext<AuthContextType>({
   login: () => {},
   logout: () => {},
   isAuthenticated: false,
+  setMustChangePassword: () => {},
 });
 
 interface AuthProviderProps {
@@ -71,6 +76,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const setMustChangePassword = (value: boolean) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, mustChangePassword: value };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   if (loading) {
     return <div>Cargando sesión...</div>; // Optionally a spinner here
   }
@@ -83,6 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         login,
         logout,
         isAuthenticated: !!token,
+        setMustChangePassword,
       }}
     >
       {children}

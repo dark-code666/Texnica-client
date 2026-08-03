@@ -51,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
   const adminSubItems = [
     { text: 'Users',           icon: <PeopleIcon fontSize="small" />,   path: '/admin/usuarios' },
     { text: 'Roles & Permissions',icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
+    { text: 'Permissions',     icon: <SecurityIcon fontSize="small" />, path: '/admin/permisos' },
     { text: 'Clients',         icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
   ];
 

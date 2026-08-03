@@ -1,4 +1,5 @@
-import  { useState, useContext } from 'react';
+import  { useState, useContext, useEffect } from 'react';
+
 import { HashRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Box, AppBar, Toolbar, Typography, IconButton, Avatar } from '@mui/material';
@@ -7,10 +8,13 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChangePasswordModal from './components/ChangePasswordModal';
+
 import Admin from './pages/Admin';
 import AdminUsuarios from './pages/AdminUsuarios';
 import AdminRoles from './pages/AdminRoles';
 import AdminClientes from './pages/AdminClientes';
+import AdminPermisos from './pages/AdminPermisos';
 import Production from './pages/Production';
 import Warehouse from './pages/Warehouse';
 import PurchaseOrder from './pages/PurchaseOrder';
@@ -50,6 +54,7 @@ const theme = createTheme({
 
 const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const drawerWidth = 240;
 
@@ -59,9 +64,22 @@ const Layout = () => {
 
   const avatarLetter = user?.userName?.charAt(0).toUpperCase() || 'U';
 
+  // Mostrar el modal de cambio de contraseña automáticamente si el usuario debe cambiarla
+  useEffect(() => {
+    if (user?.mustChangePassword) {
+      setChangePasswordOpen(true);
+    }
+  }, [user?.mustChangePassword]);
+
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
+      <ChangePasswordModal
+        open={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
+
       <AppBar
         position="fixed"
         sx={{
@@ -136,6 +154,7 @@ function App() {
                   <Route path="admin/usuarios" element={<AdminUsuarios />} />
                   <Route path="admin/roles" element={<AdminRoles />} />
                   <Route path="admin/clientes" element={<AdminClientes />} />
+                  <Route path="admin/permisos" element={<AdminPermisos />} />
                   <Route path="production" element={<Production />} />
                   <Route path="warehouse" element={<Warehouse />} />
                   <Route path="po/new" element={<CreatePO />} />
