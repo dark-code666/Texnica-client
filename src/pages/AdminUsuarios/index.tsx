@@ -1,98 +1,25 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, TextField, Select, MenuItem, FormControl, InputLabel, Paper, Chip, CircularProgress, Alert, Snackbar
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import { rolesApi, userRoleApi, authApi, usersApi } from '../utils/api';
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-  active: boolean;
-}
-
-interface User {
-  id: number;
-  userName: string;
-  userEmail: string;
-  active: boolean;
-  mustChangePassword: boolean;
-  roleId?: number;
-  roleName?: string;
-}
-
-
-const DEFAULT_PASSWORD = 'inicio';
+import { useAdminUsuarios } from './hooks/useAdminUsuarios';
 
 const AdminUsuarios: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [newUser, setNewUser] = useState({ name: '', email: '', roleId: 1 });
-  const [snackbar, setSnackbar] = useState('');
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [rolesRes, usersRes] = await Promise.all([
-        rolesApi.getAll(),
-        usersApi.getAll(),
-      ]);
-      setRoles(rolesRes.data);
-      setUsers(usersRes.data);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateUser = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!newUser.name || !newUser.email) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    try {
-      // Create user with default password "inicio"
-      const res = await authApi.register(newUser.name, newUser.email, DEFAULT_PASSWORD);
-      const createdUser = res.data.user;
-
-      // Assign role to the new user
-      if (createdUser?.id && newUser.roleId) {
-        await userRoleApi.assignRole(createdUser.id, newUser.roleId);
-      }
-
-      setSnackbar(`User "${newUser.name}" created successfully. Default password: "${DEFAULT_PASSWORD}"`);
-      setNewUser({ name: '', email: '', roleId: roles[0]?.id || 1 });
-
-      loadData();
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Error creating the user.';
-      setError(msg);
-    }
-  };
-
-  const handleAssignRole = async (userId: number, roleId: number) => {
-    try {
-      await userRoleApi.assignRole(userId, roleId);
-      setSnackbar('Role assigned successfully.');
-      loadData();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to assign role');
-    }
-  };
+  const {
+    users,
+    roles,
+    loading,
+    error,
+    newUser,
+    snackbar,
+    defaultPassword,
+    setNewUser,
+    setSnackbar,
+    handleCreateUser,
+    handleAssignRole,
+  } = useAdminUsuarios();
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -114,13 +41,12 @@ const AdminUsuarios: React.FC = () => {
             <Select label="Role" value={newUser.roleId} onChange={e => setNewUser({ ...newUser, roleId: e.target.value as number })}>
               {roles.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
             </Select>
-
           </FormControl>
           <Button type="submit" variant="contained" color="primary">New User</Button>
         </Box>
 
         <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
-          New users are created with the default password <strong>"{DEFAULT_PASSWORD}"</strong>. On first login, the system will prompt them to create their own password.
+          New users are created with the default password <strong>"{defaultPassword}"</strong>. On first login, the system will prompt them to create their own password.
         </Alert>
 
         <TableContainer>
