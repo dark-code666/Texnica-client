@@ -9,10 +9,16 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FactoryIcon from '@mui/icons-material/PrecisionManufacturing';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+
+
 import PeopleIcon from '@mui/icons-material/People';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import SecurityIcon from '@mui/icons-material/Security';
 import BusinessIcon from '@mui/icons-material/Business';
+import FactoryIcon2 from '@mui/icons-material/Factory';
+
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -53,7 +59,10 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
     { text: 'Roles & Permissions',icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
     { text: 'Permissions',     icon: <SecurityIcon fontSize="small" />, path: '/admin/permisos' },
     { text: 'Clients',         icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
+    { text: 'Customers',       icon: <BusinessIcon fontSize="small" />, path: '/admin/customers' },
+    { text: 'Factories',       icon: <FactoryIcon2 fontSize="small" />, path: '/admin/factories' },
   ];
+
 
   const isAdminActive = location.pathname.startsWith('/admin');
 
@@ -127,7 +136,30 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         </ListItem>
 
         <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/fgpo" sx={itemStyle(isActive('/fgpo'))}>
+            <ListItemIcon sx={{ color: 'white' }}><AssignmentIcon /></ListItemIcon>
+            <ListItemText primary="FGPO Master" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/fabric-requirement" sx={itemStyle(isActive('/fabric-requirement'))}>
+            <ListItemIcon sx={{ color: 'white' }}><LocalShippingIcon /></ListItemIcon>
+            <ListItemText primary="Fabric Requirement" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton component={NavLink} to="/fabric-po" sx={itemStyle(isActive('/fabric-po'))}>
+            <ListItemIcon sx={{ color: 'white' }}><ReceiptIcon /></ListItemIcon>
+            <ListItemText primary="Fabric PO" />
+          </ListItemButton>
+        </ListItem>
+
+
+        <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/warehouse" sx={itemStyle(isActive('/warehouse'))}>
+
             <ListItemIcon sx={{ color: 'white' }}><WarehouseIcon /></ListItemIcon>
             <ListItemText primary="Warehouse" />
           </ListItemButton>
