@@ -15,10 +15,18 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import AdminRoles from './pages/AdminRoles';
 import AdminClientes from './pages/AdminClientes';
 import AdminPermisos from './pages/AdminPermisos';
+import Customers from './pages/Customers';
+import Factories from './pages/Factories';
 import Production from './pages/Production';
 import Warehouse from './pages/Warehouse';
 import PurchaseOrder from './pages/PurchaseOrder';
 import CreatePO from './pages/CreatePO';
+import Fgpo from './pages/Fgpo';
+import FabricRequirement from './pages/FabricRequirement';
+import FabricPO from './pages/FabricPO';
+
+
+
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -155,8 +163,16 @@ function App() {
                   <Route path="admin/roles" element={<AdminRoles />} />
                   <Route path="admin/clientes" element={<AdminClientes />} />
                   <Route path="admin/permisos" element={<AdminPermisos />} />
+                  <Route path="admin/customers" element={<Customers />} />
+                  <Route path="admin/factories" element={<Factories />} />
                   <Route path="production" element={<Production />} />
+
+                  <Route path="fgpo" element={<Fgpo />} />
+                  <Route path="fabric-requirement" element={<FabricRequirement />} />
+                  <Route path="fabric-po" element={<FabricPO />} />
                   <Route path="warehouse" element={<Warehouse />} />
+
+
                   <Route path="po/new" element={<CreatePO />} />
                   <Route path="po/:id" element={<PurchaseOrder />} />
                   <Route path="po/demo" element={<PurchaseOrder />} />
