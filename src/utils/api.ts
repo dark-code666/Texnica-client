@@ -109,6 +109,43 @@ export const fabricPOsApi = {
   getPaged: (params: any) => api.get('/fabric-pos/paged', { params }),
 };
 
+// Mill Production API
+export const millProductionsApi = {
+  getAll: () => api.get('/mill-productions'),
+  getById: (id: number) => api.get(`/mill-productions/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/mill-productions/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/mill-productions/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/mill-productions', data),
+  update: (id: number, data: any) => api.put(`/mill-productions/${id}`, data),
+  delete: (id: number) => api.delete(`/mill-productions/${id}`),
+  getPaged: (params: any) => api.get('/mill-productions/paged', { params }),
+};
+
+// Mill Test API
+export const millTestsApi = {
+  getAll: () => api.get('/mill-tests'),
+  getById: (id: number) => api.get(`/mill-tests/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/mill-tests/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/mill-tests/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/mill-tests', data),
+  update: (id: number, data: any) => api.put(`/mill-tests/${id}`, data),
+  delete: (id: number) => api.delete(`/mill-tests/${id}`),
+  getPaged: (params: any) => api.get('/mill-tests/paged', { params }),
+};
+
+// Fabric Shipment API
+export const fabricShipmentsApi = {
+  getAll: () => api.get('/fabric-shipments'),
+  getById: (id: number) => api.get(`/fabric-shipments/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/fabric-shipments/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/fabric-shipments/fgpo/${fgpoId}`),
+  getByLot: (lotNumber: string) => api.get(`/fabric-shipments/lot/${lotNumber}`),
+  create: (data: any) => api.post('/fabric-shipments', data),
+  update: (id: number, data: any) => api.put(`/fabric-shipments/${id}`, data),
+  delete: (id: number) => api.delete(`/fabric-shipments/${id}`),
+  getPaged: (params: any) => api.get('/fabric-shipments/paged', { params }),
+};
+
 // Auth API
 export const authApi = {
   login: (userName: string, password: string) => 
@@ -120,6 +157,12 @@ export const authApi = {
   changePasswordFirstLogin: (newPassword: string) => 
     api.post('/auth/change-password', { currentPassword: '', newPassword }),
 
+};
+
+// Catalogs API (UOM, FabricComponent, Statuses, etc.)
+export const catalogsApi = {
+  getAll: () => api.get('/catalogs'),
+  getByType: (type: string) => api.get(`/catalogs/${type}`),
 };
 
 

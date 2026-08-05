@@ -4,7 +4,7 @@ import {
   Button, TextField, Select, MenuItem, FormControl, InputLabel, Paper, Chip, CircularProgress, Alert, Snackbar
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import { useAdminUsuarios } from './hooks/useAdminUsuarios';
+import { useAdminUsuarios } from '../../hooks/AdminUsuarios/useAdminUsuarios';
 
 const AdminUsuarios: React.FC = () => {
   const {

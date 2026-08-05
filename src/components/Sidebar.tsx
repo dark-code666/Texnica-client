@@ -11,6 +11,9 @@ import FactoryIcon from '@mui/icons-material/PrecisionManufacturing';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import ScienceIcon from '@mui/icons-material/Science';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 
 
 import PeopleIcon from '@mui/icons-material/People';
@@ -35,6 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const [adminOpen, setAdminOpen] = useState<boolean>(location.pathname.startsWith('/admin'));
+
+  const productionPaths = ['/production', '/fgpo', '/fabric-requirement', '/fabric-po', '/mill-production', '/mill-test', '/fabric-shipment'];
+  const [productionOpen, setProductionOpen] = useState<boolean>(() =>
+    productionPaths.some(p => location.pathname.startsWith(p)));
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname === path;
@@ -65,6 +72,18 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
 
 
   const isAdminActive = location.pathname.startsWith('/admin');
+
+  const productionSubItems = [
+    { text: 'Production',        icon: <FactoryIcon fontSize="small" />,     path: '/production' },
+    { text: 'FGPO Master',       icon: <AssignmentIcon fontSize="small" />,  path: '/fgpo' },
+    { text: 'Fabric Requirement',icon: <LocalShippingIcon fontSize="small" />, path: '/fabric-requirement' },
+    { text: 'Fabric PO',         icon: <ReceiptIcon fontSize="small" />,     path: '/fabric-po' },
+    { text: 'Mill Production',   icon: <PrecisionManufacturingIcon fontSize="small" />, path: '/mill-production' },
+    { text: 'Mill Test',         icon: <ScienceIcon fontSize="small" />,     path: '/mill-test' },
+    { text: 'Fabric Shipment',   icon: <FlightTakeoffIcon fontSize="small" />, path: '/fabric-shipment' },
+  ];
+
+  const isProductionActive = productionPaths.some(p => location.pathname.startsWith(p));
 
   const handleLogout = () => {
     logout();
@@ -129,33 +148,33 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         </Collapse>
 
         <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/production" sx={itemStyle(isActive('/production'))}>
+          <ListItemButton onClick={() => setProductionOpen(!productionOpen)} sx={itemStyle(isProductionActive)}>
             <ListItemIcon sx={{ color: 'white' }}><FactoryIcon /></ListItemIcon>
             <ListItemText primary="Production" />
+            {productionOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </ListItemButton>
         </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/fgpo" sx={itemStyle(isActive('/fgpo'))}>
-            <ListItemIcon sx={{ color: 'white' }}><AssignmentIcon /></ListItemIcon>
-            <ListItemText primary="FGPO Master" />
-          </ListItemButton>
-        </ListItem>
-
-        <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/fabric-requirement" sx={itemStyle(isActive('/fabric-requirement'))}>
-            <ListItemIcon sx={{ color: 'white' }}><LocalShippingIcon /></ListItemIcon>
-            <ListItemText primary="Fabric Requirement" />
-          </ListItemButton>
-        </ListItem>
-
-        <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/fabric-po" sx={itemStyle(isActive('/fabric-po'))}>
-            <ListItemIcon sx={{ color: 'white' }}><ReceiptIcon /></ListItemIcon>
-            <ListItemText primary="Fabric PO" />
-          </ListItemButton>
-        </ListItem>
-
+        <Collapse in={productionOpen} timeout="auto" unmountOnExit>
+          <List disablePadding>
+            {productionSubItems.map((sub) => (
+              <ListItem key={sub.text} disablePadding>
+                <ListItemButton
+                  component={NavLink}
+                  to={sub.path}
+                  sx={subItemStyle(isActive(sub.path))}
+                >
+                  <ListItemIcon sx={{ color: 'rgba(255,255,255,0.85)', minWidth: 32 }}>
+                    {sub.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={<Typography sx={{ fontSize: '0.85rem' }}>{sub.text}</Typography>}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
 
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/warehouse" sx={itemStyle(isActive('/warehouse'))}>

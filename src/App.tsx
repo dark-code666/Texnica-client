@@ -24,6 +24,9 @@ import CreatePO from './pages/CreatePO';
 import Fgpo from './pages/Fgpo';
 import FabricRequirement from './pages/FabricRequirement';
 import FabricPO from './pages/FabricPO';
+import MillProduction from './pages/MillProduction';
+import MillTest from './pages/MillTest';
+import FabricShipment from './pages/FabricShipment';
 
 
 
@@ -170,6 +173,9 @@ function App() {
                   <Route path="fgpo" element={<Fgpo />} />
                   <Route path="fabric-requirement" element={<FabricRequirement />} />
                   <Route path="fabric-po" element={<FabricPO />} />
+                  <Route path="mill-production" element={<MillProduction />} />
+                  <Route path="mill-test" element={<MillTest />} />
+                  <Route path="fabric-shipment" element={<FabricShipment />} />
                   <Route path="warehouse" element={<Warehouse />} />
 
 
