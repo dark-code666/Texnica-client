@@ -1,0 +1,320 @@
+import React, { useState, FormEvent } from 'react';
+import {
+  Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Button, TextField, Paper, Chip, CircularProgress, Alert, Dialog, DialogTitle,
+  DialogContent, DialogActions, IconButton, InputAdornment, MenuItem,
+  FormControl, InputLabel, TablePagination, Grid, Select, Divider
+} from '@mui/material';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { useShadeMatches } from '../../hooks/shadeMatches/useShadeMatches';
+import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
+import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { ShadeMatch } from '../../types';
+
+const sc = (s: string) => {
+  const m: Record<string, any> = { Approved: 'success', Rejected: 'error', 'Conditionally Approved': 'warning', Pending: 'default' };
+  return m[s] ?? 'default';
+};
+
+const DEFAULT_SHADE_GROUPS = ['A', 'B', 'C', 'D'];
+const DEFAULT_MATCH = ['Match', 'Slight Difference', 'Mismatch'];
+const DEFAULT_WASH = ['No Change', 'Slight Change', 'Significant Change'];
+
+const emptyForm = {
+  ReviewDate: new Date().toISOString().split('T')[0],
+  FGPOId: 0,
+  BodyFabricLot: '', RibLot: '', ShoulderTapeLot: '',
+  BodyShadeGroup: '', RibShadeGroup: '', TapeShadeGroup: '',
+  BodyVsRib: 'Match', BodyVsTape: 'Match', LightSource: 'D65',
+  BeforeWashResult: 'No Change', AfterWashResult: 'No Change',
+  OverallResult: 'Pending', ApprovedBy: '', ReportLink: '', Comments: '',
+};
+
+const ShadeMatchPage: React.FC = () => {
+  const {
+    items, loading, saving, error, page, rowsPerPage, totalCount,
+    setPage, setRowsPerPage, setSearchQuery, setError, refresh,
+    create, update, remove,
+  } = useShadeMatches();
+
+  const [searchInput, setSearchInput] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [viewItem, setViewItem] = useState<ShadeMatch | null>(null);
+  const [formError, setFormError] = useState('');
+
+  const { options: fgpoList } = useFgpoOptions();
+  const { catalogs } = useCatalogs();
+  const SHADE_GROUPS = catalogs['ShadeGroup']?.length ? catalogs['ShadeGroup'] : DEFAULT_SHADE_GROUPS;
+  const MATCH_OPTIONS = catalogs['ShadeMatchResult']?.length ? catalogs['ShadeMatchResult'] : DEFAULT_MATCH;
+  const WASH_OPTIONS = catalogs['WashResult']?.length ? catalogs['WashResult'] : DEFAULT_WASH;
+  const APPROVAL_OPTIONS = catalogs['Approval']?.length ? catalogs['Approval'] : ['Pending', 'Approved', 'Conditionally Approved', 'Rejected'];
+
+  const [form, setForm] = useState(emptyForm);
+
+  const handleSearch = (e: FormEvent) => { e.preventDefault(); setSearchQuery(searchInput); };
+  const handleClearSearch = () => setSearchInput('');
+
+  const resetForm = () => setForm(emptyForm);
+
+  const openCreate = () => { setEditingId(null); resetForm(); setFormError(''); setDialogOpen(true); };
+  const openEdit = (item: ShadeMatch) => {
+    setEditingId(item.id);
+    setForm({
+      ReviewDate: item.reviewDate?.split('T')[0] || '',
+      FGPOId: item.fgpoId,
+      BodyFabricLot: item.bodyFabricLot ?? '', RibLot: item.ribLot ?? '', ShoulderTapeLot: item.shoulderTapeLot ?? '',
+      BodyShadeGroup: item.bodyShadeGroup ?? '', RibShadeGroup: item.ribShadeGroup ?? '', TapeShadeGroup: item.tapeShadeGroup ?? '',
+      BodyVsRib: item.bodyVsRib || 'Match', BodyVsTape: item.bodyVsTape || 'Match', LightSource: item.lightSource || 'D65',
+      BeforeWashResult: item.beforeWashResult || 'No Change', AfterWashResult: item.afterWashResult || 'No Change',
+      OverallResult: item.overallResult || 'Pending', ApprovedBy: item.approvedBy ?? '',
+      ReportLink: item.reportLink ?? '', Comments: item.comments ?? '',
+    });
+    setFormError(''); setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Delete this shade match?')) return;
+    try { await remove(id); }
+    catch (err: any) { setError(err.response?.data || 'Error deleting.'); }
+  };
+
+  const handleSave = async () => {
+    setFormError('');
+    if (!form.FGPOId) { setFormError('FGPO is required.'); return; }
+    try {
+      const payload = {
+        ...form,
+        ReviewDate: form.ReviewDate ? new Date(form.ReviewDate).toISOString() : new Date().toISOString(),
+      };
+      if (editingId) await update(editingId, payload);
+      else await create(payload);
+      setDialogOpen(false);
+    } catch (err: any) { setFormError(err.response?.data || 'Error saving.'); }
+  };
+
+  const fmt = (v?: string) => v?.split('T')[0] || '-';
+  const setF = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            <ColorLensIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'primary.main' }} />
+            Shade Match
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Aprobación de tonalidad entre body fabric, rib y tape
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={refresh}>Refresh</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>New Match</Button>
+        </Box>
+      </Box>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+
+      <Paper sx={{ mb: 2, p: 1.5, display: 'flex', gap: 1 }}>
+        <Box component="form" onSubmit={handleSearch} sx={{ display: 'flex', gap: 1, flex: 1 }}>
+          <TextField size="small" placeholder="Search by FGPO, Lot, Shade, Result..."
+            value={searchInput} onChange={e => setSearchInput(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+                endAdornment: searchInput ? <InputAdornment position="end"><IconButton size="small" onClick={handleClearSearch}><ClearIcon /></IconButton></InputAdornment> : null,
+              },
+            }}
+            sx={{ flex: 1, maxWidth: 500 }}
+          />
+          <Button variant="outlined" type="submit">Search</Button>
+        </Box>
+      </Paper>
+
+      <Paper sx={{ overflow: 'hidden' }}>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                {['Date', 'FGPO', 'Style', 'Color', 'Body Lot', 'Shade (B/R/T)', 'Body vs Rib', 'Body vs Tape', 'Wash', 'Result', 'Actions'].map(h =>
+                  <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>
+                )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={11} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
+              ) : items.length === 0 ? (
+                <TableRow><TableCell colSpan={11} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                  <Typography variant="body1">No shade matches found</Typography>
+                  <Button variant="text" onClick={openCreate} sx={{ mt: 1 }}>Create your first shade match</Button>
+                </TableCell></TableRow>
+              ) : items.map((item: ShadeMatch) => (
+                <TableRow key={item.id} hover>
+                  <TableCell>{fmt(item.reviewDate)}</TableCell>
+                  <TableCell>{item.fgpoNumber}</TableCell>
+                  <TableCell>{item.style || '-'}</TableCell>
+                  <TableCell>{item.color || '-'}</TableCell>
+                  <TableCell>{item.bodyFabricLot || '-'}</TableCell>
+                  <TableCell>{[item.bodyShadeGroup, item.ribShadeGroup, item.tapeShadeGroup].filter(Boolean).join('/') || '-'}</TableCell>
+                  <TableCell><Chip label={item.bodyVsRib || '-'} size="small" color={item.bodyVsRib === 'Mismatch' ? 'error' : item.bodyVsRib === 'Match' ? 'success' : 'warning'} variant="outlined" /></TableCell>
+                  <TableCell><Chip label={item.bodyVsTape || '-'} size="small" color={item.bodyVsTape === 'Mismatch' ? 'error' : item.bodyVsTape === 'Match' ? 'success' : 'warning'} variant="outlined" /></TableCell>
+                  <TableCell>{item.afterWashResult || '-'}</TableCell>
+                  <TableCell><Chip label={item.overallResult || 'N/A'} size="small" color={sc(item.overallResult ?? '')} /></TableCell>
+                  <TableCell>
+                    <IconButton size="small" color="primary" onClick={() => { setViewItem(item); setViewOpen(true); }}><VisibilityIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" color="info" onClick={() => openEdit(item)}><EditIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" color="error" onClick={() => handleDelete(item.id)}><DeleteIcon fontSize="small" /></IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination component="div" count={totalCount} page={page}
+          onPageChange={(_, p) => setPage(p)} rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={e => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          rowsPerPageOptions={[5, 10, 25, 50]} labelRowsPerPage="Rows:" />
+      </Paper>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
+          {editingId ? 'Edit Shade Match' : 'New Shade Match'}
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 3, pb: 1 }}>
+          {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
+          <Grid container spacing={2.5}>
+            <Grid size={{ xs: 12 }}><Typography variant="subtitle2" color="primary" sx={{ mb: 0.5 }}>Referencias</Typography></Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>FGPO *</InputLabel>
+                <Select value={form.FGPOId || ''} label="FGPO *" onChange={e => setF('FGPOId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a FGPO...</em></MenuItem>
+                  {fgpoList.map((f: any) => <MenuItem key={f.id ?? f.ID} value={f.id ?? f.ID}>{f.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth size="small" label="Review Date *" type="date" value={form.ReviewDate} onChange={e => setF('ReviewDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth size="small" label="Body Fabric Lot" value={form.BodyFabricLot} onChange={e => setF('BodyFabricLot', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth size="small" label="Rib Lot" value={form.RibLot} onChange={e => setF('RibLot', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth size="small" label="Shoulder Tape Lot" value={form.ShoulderTapeLot} onChange={e => setF('ShoulderTapeLot', e.target.value)} /></Grid>
+
+            <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Grupos de Shade</Typography></Divider></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small"><InputLabel>Body Shade Group</InputLabel>
+                <Select value={form.BodyShadeGroup} label="Body Shade Group" onChange={e => setF('BodyShadeGroup', e.target.value)}>
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {SHADE_GROUPS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small"><InputLabel>Rib Shade Group</InputLabel>
+                <Select value={form.RibShadeGroup} label="Rib Shade Group" onChange={e => setF('RibShadeGroup', e.target.value)}>
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {SHADE_GROUPS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small"><InputLabel>Tape Shade Group</InputLabel>
+                <Select value={form.TapeShadeGroup} label="Tape Shade Group" onChange={e => setF('TapeShadeGroup', e.target.value)}>
+                  <MenuItem value=""><em>None</em></MenuItem>
+                  {SHADE_GROUPS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Comparación</Typography></Divider></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small"><InputLabel>Body vs Rib</InputLabel>
+                <Select value={form.BodyVsRib} label="Body vs Rib" onChange={e => setF('BodyVsRib', e.target.value)}>
+                  {MATCH_OPTIONS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small"><InputLabel>Body vs Tape</InputLabel>
+                <Select value={form.BodyVsTape} label="Body vs Tape" onChange={e => setF('BodyVsTape', e.target.value)}>
+                  {MATCH_OPTIONS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Light Source" value={form.LightSource} onChange={e => setF('LightSource', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small"><InputLabel>Before Wash</InputLabel>
+                <Select value={form.BeforeWashResult} label="Before Wash" onChange={e => setF('BeforeWashResult', e.target.value)}>
+                  {WASH_OPTIONS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small"><InputLabel>After Wash</InputLabel>
+                <Select value={form.AfterWashResult} label="After Wash" onChange={e => setF('AfterWashResult', e.target.value)}>
+                  {WASH_OPTIONS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small"><InputLabel>Overall Result</InputLabel>
+                <Select value={form.OverallResult} label="Overall Result" onChange={e => setF('OverallResult', e.target.value)}>
+                  {APPROVAL_OPTIONS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Approved By" value={form.ApprovedBy} onChange={e => setF('ApprovedBy', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, pt: 0 }}>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleSave} disabled={saving} startIcon={saving ? <CircularProgress size={18} /> : null}>
+            {editingId ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Dialog */}
+      <Dialog open={viewOpen} onClose={() => setViewOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Shade Match Detail</DialogTitle><Divider />
+        <DialogContent sx={{ pt: 3 }}>
+          {viewItem && (
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Review Date</Typography><Typography sx={{ fontWeight: 600 }}>{fmt(viewItem.reviewDate)}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">FGPO</Typography><Typography sx={{ fontWeight: 600 }}>{viewItem.fgpoNumber} ({viewItem.customerName})</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Style / Color</Typography><Typography>{viewItem.style || '-'} / {viewItem.color || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Approved By</Typography><Typography>{viewItem.approvedBy || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /></Grid>
+              <Grid size={{ xs: 4, sm: 2 }}><Typography variant="caption" color="text.secondary">Body Lot</Typography><Typography>{viewItem.bodyFabricLot || '-'}</Typography></Grid>
+              <Grid size={{ xs: 4, sm: 2 }}><Typography variant="caption" color="text.secondary">Rib Lot</Typography><Typography>{viewItem.ribLot || '-'}</Typography></Grid>
+              <Grid size={{ xs: 4, sm: 2 }}><Typography variant="caption" color="text.secondary">Tape Lot</Typography><Typography>{viewItem.shoulderTapeLot || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Shade Groups (Body/Rib/Tape)</Typography><Typography>{[viewItem.bodyShadeGroup, viewItem.ribShadeGroup, viewItem.tapeShadeGroup].filter(Boolean).join(' / ') || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Body vs Rib</Typography><Chip label={viewItem.bodyVsRib || '-'} size="small" color={viewItem.bodyVsRib === 'Mismatch' ? 'error' : 'success'} /></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Body vs Tape</Typography><Chip label={viewItem.bodyVsTape || '-'} size="small" color={viewItem.bodyVsTape === 'Mismatch' ? 'error' : 'success'} /></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Before Wash</Typography><Typography>{viewItem.beforeWashResult || '-'}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">After Wash</Typography><Typography>{viewItem.afterWashResult || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Light Source</Typography><Typography>{viewItem.lightSource || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Overall Result</Typography><Chip label={viewItem.overallResult} size="small" color={sc(viewItem.overallResult ?? '')} /></Grid>
+              {viewItem.comments && <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /><Typography variant="caption" color="text.secondary">Comments</Typography><Typography>{viewItem.comments}</Typography></Grid>}
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions><Button onClick={() => setViewOpen(false)}>Close</Button></DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default ShadeMatchPage;

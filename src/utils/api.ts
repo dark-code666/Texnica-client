@@ -146,6 +146,77 @@ export const fabricShipmentsApi = {
   getPaged: (params: any) => api.get('/fabric-shipments/paged', { params }),
 };
 
+// Fabric Receiving API
+export const fabricReceivingsApi = {
+  getAll: () => api.get('/fabric-receivings'),
+  getById: (id: number) => api.get(`/fabric-receivings/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/fabric-receivings/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/fabric-receivings/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/fabric-receivings', data),
+  update: (id: number, data: any) => api.put(`/fabric-receivings/${id}`, data),
+  delete: (id: number) => api.delete(`/fabric-receivings/${id}`),
+  getPaged: (params: any) => api.get('/fabric-receivings/paged', { params }),
+};
+
+// Roll Receiving API
+export const rollReceivingsApi = {
+  getAll: () => api.get('/roll-receivings'),
+  getById: (id: number) => api.get(`/roll-receivings/${id}`),
+  getByReceiving: (receivingId: number) => api.get(`/roll-receivings/receiving/${receivingId}`),
+  create: (data: any) => api.post('/roll-receivings', data),
+  update: (id: number, data: any) => api.put(`/roll-receivings/${id}`, data),
+  delete: (id: number) => api.delete(`/roll-receivings/${id}`),
+  getPaged: (params: any) => api.get('/roll-receivings/paged', { params }),
+};
+
+// Four-Point Inspection API
+export const fourPointApi = {
+  getAll: () => api.get('/four-point'),
+  getById: (id: number) => api.get(`/four-point/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/four-point/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/four-point/fgpo/${fgpoId}`),
+  getByReceiving: (receivingId: number) => api.get(`/four-point/receiving/${receivingId}`),
+  create: (data: any) => api.post('/four-point', data),
+  update: (id: number, data: any) => api.put(`/four-point/${id}`, data),
+  delete: (id: number) => api.delete(`/four-point/${id}`),
+  getPaged: (params: any) => api.get('/four-point/paged', { params }),
+};
+
+// Internal Test API
+export const internalTestsApi = {
+  getAll: () => api.get('/internal-tests'),
+  getById: (id: number) => api.get(`/internal-tests/${id}`),
+  getByFabricPO: (fabricPOId: number) => api.get(`/internal-tests/fabric-po/${fabricPOId}`),
+  getByFgpo: (fgpoId: number) => api.get(`/internal-tests/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/internal-tests', data),
+  update: (id: number, data: any) => api.put(`/internal-tests/${id}`, data),
+  delete: (id: number) => api.delete(`/internal-tests/${id}`),
+  getPaged: (params: any) => api.get('/internal-tests/paged', { params }),
+};
+
+// Shade Match API
+export const shadeMatchesApi = {
+  getAll: () => api.get('/shade-matches'),
+  getById: (id: number) => api.get(`/shade-matches/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/shade-matches/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/shade-matches', data),
+  update: (id: number, data: any) => api.put(`/shade-matches/${id}`, data),
+  delete: (id: number) => api.delete(`/shade-matches/${id}`),
+  getPaged: (params: any) => api.get('/shade-matches/paged', { params }),
+};
+
+// Inline Quality API
+export const inlineQualitiesApi = {
+  getAll: () => api.get('/inline-qualities'),
+  getById: (id: number) => api.get(`/inline-qualities/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/inline-qualities/fgpo/${fgpoId}`),
+  getByLine: (line: string) => api.get(`/inline-qualities/line/${line}`),
+  create: (data: any) => api.post('/inline-qualities', data),
+  update: (id: number, data: any) => api.put(`/inline-qualities/${id}`, data),
+  delete: (id: number) => api.delete(`/inline-qualities/${id}`),
+  getPaged: (params: any) => api.get('/inline-qualities/paged', { params }),
+};
+
 // Auth API
 export const authApi = {
   login: (userName: string, password: string) => 

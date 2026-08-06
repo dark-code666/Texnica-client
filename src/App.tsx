@@ -27,6 +27,28 @@ import FabricPO from './pages/FabricPO';
 import MillProduction from './pages/MillProduction';
 import MillTest from './pages/MillTest';
 import FabricShipment from './pages/FabricShipment';
+import FabricReceiving from './pages/FabricReceiving';
+import RollReceiving from './pages/RollReceiving';
+import FourPoint from './pages/FourPoint';
+import InternalTest from './pages/InternalTest';
+import ShadeMatch from './pages/ShadeMatch';
+import InlineQuality from './pages/InlineQuality';
+import EndlineInspection from './pages/EndlineInspection';
+import PreFinalInspection from './pages/PreFinalInspection';
+import FinalInspection from './pages/FinalInspection';
+import PPSample from './pages/PPSample';
+import TOPSample from './pages/TOPSample';
+import ProductionReadiness from './pages/ProductionReadiness';
+import CuttingRelease from './pages/CuttingRelease';
+import CuttingControl from './pages/CuttingControl';
+import CuttingPanelQC from './pages/CuttingPanelQC';
+import TrimsControl from './pages/TrimsControl';
+import SewingProduction from './pages/SewingProduction';
+import FabricInventory from './pages/FabricInventory';
+import FabricReservation from './pages/FabricReservation';
+import PackingControl from './pages/PackingControl';
+import FinishedGoods from './pages/FinishedGoods';
+import ShipmentControl from './pages/ShipmentControl';
 
 
 
@@ -176,6 +198,28 @@ function App() {
                   <Route path="mill-production" element={<MillProduction />} />
                   <Route path="mill-test" element={<MillTest />} />
                   <Route path="fabric-shipment" element={<FabricShipment />} />
+                  <Route path="fabric-receiving" element={<FabricReceiving />} />
+                  <Route path="roll-receiving" element={<RollReceiving />} />
+                  <Route path="four-point" element={<FourPoint />} />
+                  <Route path="internal-test" element={<InternalTest />} />
+                  <Route path="shade-match" element={<ShadeMatch />} />
+                  <Route path="inline-quality" element={<InlineQuality />} />
+                  <Route path="endline-inspection" element={<EndlineInspection />} />
+                  <Route path="pre-final-inspection" element={<PreFinalInspection />} />
+                  <Route path="final-inspection" element={<FinalInspection />} />
+                  <Route path="pp-sample" element={<PPSample />} />
+                  <Route path="top-sample" element={<TOPSample />} />
+                  <Route path="production-readiness" element={<ProductionReadiness />} />
+                  <Route path="cutting-release" element={<CuttingRelease />} />
+                  <Route path="cutting-control" element={<CuttingControl />} />
+                  <Route path="cutting-panel-qc" element={<CuttingPanelQC />} />
+                  <Route path="trims-control" element={<TrimsControl />} />
+                  <Route path="sewing-production" element={<SewingProduction />} />
+                  <Route path="fabric-inventory" element={<FabricInventory />} />
+                  <Route path="fabric-reservation" element={<FabricReservation />} />
+                  <Route path="packing-control" element={<PackingControl />} />
+                  <Route path="finished-goods" element={<FinishedGoods />} />
+                  <Route path="shipment-control" element={<ShipmentControl />} />
                   <Route path="warehouse" element={<Warehouse />} />
 
 

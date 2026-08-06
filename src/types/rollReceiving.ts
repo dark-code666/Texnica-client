@@ -1,0 +1,52 @@
+// Roll Receiving (rollos recibidos dentro de un Fabric Receiving)
+
+export interface RollReceiving {
+  id: number;
+  receivingId: number;
+  receivingNumber: string;
+  fabricPOId: number;
+  fabricPONumber: string;
+  fgpoId: number;
+  fgpoNumber: string;
+  customerName: string;
+  supplier?: string;
+  lotNumber?: string;
+  lotId?: number;
+  rollNumber?: string;
+  supplierRollNumber?: string;
+  color?: string;
+  grossWeight: number;
+  netWeight: number;
+  actualYardage: number;
+  actualWidth: number;
+  actualGSM: number;
+  shadeGroup?: string;
+  damagedQty: number;
+  condition?: string;
+  warehouseLocation?: string;
+  receivedDate: string;
+  dataOwner?: string;
+  comments?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateRollReceivingInput {
+  receivingId: number;
+  lotNumber?: string;
+  rollNumber?: string;
+  supplierRollNumber?: string;
+  grossWeight: number;
+  netWeight: number;
+  actualYardage: number;
+  actualWidth: number;
+  actualGSM: number;
+  shadeGroup?: string;
+  damagedQty: number;
+  condition?: string;
+  warehouseLocation?: string;
+  receivedDate: string;
+  dataOwner?: string;
+  comments?: string;
+}

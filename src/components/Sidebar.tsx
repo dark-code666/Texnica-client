@@ -7,21 +7,35 @@ import {
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
+import CategoryIcon from '@mui/icons-material/Category';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import FactoryIcon from '@mui/icons-material/PrecisionManufacturing';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import ScienceIcon from '@mui/icons-material/Science';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
-
-
-import PeopleIcon from '@mui/icons-material/People';
+import RuleIcon from '@mui/icons-material/Rule';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import StyleIcon from '@mui/icons-material/Style';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+import ContentCutIcon from '@mui/icons-material/ContentCut';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import TuneIcon from '@mui/icons-material/Tune';
+import ChairAltIcon from '@mui/icons-material/ChairAlt';
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+import AllInboxIcon from '@mui/icons-material/AllInbox';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
+import PeopleIcon from '@mui/icons-material/People';
 import SecurityIcon from '@mui/icons-material/Security';
 import BusinessIcon from '@mui/icons-material/Business';
 import FactoryIcon2 from '@mui/icons-material/Factory';
-
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -33,18 +47,113 @@ interface SidebarProps {
   drawerWidth: number;
 }
 
+interface SubItem {
+  text: string;
+  icon: React.ReactNode;
+  path: string;
+}
+
+interface NavSection {
+  key: string;
+  title: string;
+  icon: React.ReactNode;
+  subItems: SubItem[];
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawerWidth }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
-  const [adminOpen, setAdminOpen] = useState<boolean>(location.pathname.startsWith('/admin'));
 
-  const productionPaths = ['/production', '/fgpo', '/fabric-requirement', '/fabric-po', '/mill-production', '/mill-test', '/fabric-shipment'];
-  const [productionOpen, setProductionOpen] = useState<boolean>(() =>
-    productionPaths.some(p => location.pathname.startsWith(p)));
+  // ===== Nueva estructura de módulos =====
+  const navSections: NavSection[] = [
+    {
+      key: 'fabric',
+      title: 'Fabric',
+      icon: <CategoryIcon />,
+      subItems: [
+        { text: 'FGPO Master',      icon: <AssignmentIcon fontSize="small" />,             path: '/fgpo' },
+        { text: 'Fabric Requirement', icon: <LocalShippingIcon fontSize="small" />,        path: '/fabric-requirement' },
+        { text: 'Fabric PO',        icon: <ReceiptIcon fontSize="small" />,                path: '/fabric-po' },
+        { text: 'Mill Production',  icon: <PrecisionManufacturingIcon fontSize="small" />, path: '/mill-production' },
+        { text: 'Mill Test',        icon: <ScienceIcon fontSize="small" />,                path: '/mill-test' },
+        { text: 'Fabric Shipment',  icon: <FlightTakeoffIcon fontSize="small" />,          path: '/fabric-shipment' },
+      ],
+    },
+    {
+      key: 'quality',
+      title: 'Quality Control',
+      icon: <VerifiedUserIcon />,
+      subItems: [
+        { text: 'Four-Point',           icon: <RuleIcon fontSize="small" />,             path: '/four-point' },
+        { text: 'Internal Test',        icon: <ScienceIcon fontSize="small" />,          path: '/internal-test' },
+        { text: 'Shade Match',          icon: <ColorLensIcon fontSize="small" />,        path: '/shade-match' },
+        { text: 'Inline Quality',       icon: <FactCheckIcon fontSize="small" />,        path: '/inline-quality' },
+        { text: 'Endline Inspection',   icon: <FactCheckIcon fontSize="small" />,        path: '/endline-inspection' },
+        { text: 'Pre-Final Inspection', icon: <FactCheckIcon fontSize="small" />,        path: '/pre-final-inspection' },
+        { text: 'Final Inspection',     icon: <WorkspacePremiumIcon fontSize="small" />, path: '/final-inspection' },
+        { text: 'PP Sample',            icon: <StyleIcon fontSize="small" />,            path: '/pp-sample' },
+        { text: 'TOP Sample',           icon: <ChecklistIcon fontSize="small" />,        path: '/top-sample' },
+      ],
+    },
+    {
+      key: 'production',
+      title: 'Production',
+      icon: <FactoryIcon />,
+      subItems: [
+        { text: 'Production',          icon: <FactoryIcon fontSize="small" />,          path: '/production' },
+        { text: 'Production Readiness', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/production-readiness' },
+        { text: 'Cutting Release',     icon: <ContentCutIcon fontSize="small" />,        path: '/cutting-release' },
+        { text: 'Cutting Control',     icon: <ContentCutIcon fontSize="small" />,        path: '/cutting-control' },
+        { text: 'Cutting Panel QC',    icon: <ContentCutIcon fontSize="small" />,        path: '/cutting-panel-qc' },
+        { text: 'Trims Control',       icon: <TuneIcon fontSize="small" />,             path: '/trims-control' },
+        { text: 'Sewing Production',   icon: <ChairAltIcon fontSize="small" />,         path: '/sewing-production' },
+      ],
+    },
+    {
+      key: 'shipping',
+      title: 'Shipping & Warehouse',
+      icon: <LocalShippingIcon />,
+      subItems: [
+        { text: 'Fabric Receiving',   icon: <MoveToInboxIcon fontSize="small" />,      path: '/fabric-receiving' },
+        { text: 'Roll Receiving',     icon: <AllInboxIcon fontSize="small" />,         path: '/roll-receiving' },
+        { text: 'Fabric Inventory',   icon: <Inventory2Icon fontSize="small" />,       path: '/fabric-inventory' },
+        { text: 'Fabric Reservation', icon: <BookmarkAddIcon fontSize="small" />,      path: '/fabric-reservation' },
+        { text: 'Packing Control',    icon: <InventoryIcon fontSize="small" />,        path: '/packing-control' },
+        { text: 'Finished Goods',     icon: <WarehouseIcon fontSize="small" />,        path: '/finished-goods' },
+        { text: 'Shipment Control',   icon: <FlightTakeoffIcon fontSize="small" />,    path: '/shipment-control' },
+        { text: 'Warehouse',          icon: <WarehouseIcon fontSize="small" />,        path: '/warehouse' },
+      ],
+    },
+  ];
+
+  const adminSubItems: SubItem[] = [
+    { text: 'Users',              icon: <PeopleIcon fontSize="small" />,  path: '/admin/usuarios' },
+    { text: 'Roles & Permissions', icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
+    { text: 'Permissions',        icon: <SecurityIcon fontSize="small" />, path: '/admin/permisos' },
+    { text: 'Clients',            icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
+    { text: 'Customers',          icon: <BusinessIcon fontSize="small" />, path: '/admin/customers' },
+    { text: 'Factories',          icon: <FactoryIcon2 fontSize="small" />, path: '/admin/factories' },
+  ];
+
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {
+      admin: location.pathname.startsWith('/admin'),
+    };
+    navSections.forEach((sec) => {
+      initial[sec.key] = sec.subItems.some((s) => location.pathname.startsWith(s.path));
+    });
+    return initial;
+  });
+
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname === path;
+
+  const isSectionActive = (sec: NavSection) =>
+    sec.subItems.some((s) => location.pathname.startsWith(s.path));
 
   const itemStyle = (active: boolean): SxProps<Theme> => ({
     backgroundColor: active ? 'rgba(255,255,255,0.15)' : 'transparent',
@@ -61,37 +170,47 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
     py: 0.8,
   });
 
-  const adminSubItems = [
-    { text: 'Users',           icon: <PeopleIcon fontSize="small" />,   path: '/admin/usuarios' },
-    { text: 'Roles & Permissions',icon: <SecurityIcon fontSize="small" />, path: '/admin/roles' },
-    { text: 'Permissions',     icon: <SecurityIcon fontSize="small" />, path: '/admin/permisos' },
-    { text: 'Clients',         icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
-    { text: 'Customers',       icon: <BusinessIcon fontSize="small" />, path: '/admin/customers' },
-    { text: 'Factories',       icon: <FactoryIcon2 fontSize="small" />, path: '/admin/factories' },
-  ];
-
-
-  const isAdminActive = location.pathname.startsWith('/admin');
-
-  const productionSubItems = [
-    { text: 'Production',        icon: <FactoryIcon fontSize="small" />,     path: '/production' },
-    { text: 'FGPO Master',       icon: <AssignmentIcon fontSize="small" />,  path: '/fgpo' },
-    { text: 'Fabric Requirement',icon: <LocalShippingIcon fontSize="small" />, path: '/fabric-requirement' },
-    { text: 'Fabric PO',         icon: <ReceiptIcon fontSize="small" />,     path: '/fabric-po' },
-    { text: 'Mill Production',   icon: <PrecisionManufacturingIcon fontSize="small" />, path: '/mill-production' },
-    { text: 'Mill Test',         icon: <ScienceIcon fontSize="small" />,     path: '/mill-test' },
-    { text: 'Fabric Shipment',   icon: <FlightTakeoffIcon fontSize="small" />, path: '/fabric-shipment' },
-  ];
-
-  const isProductionActive = productionPaths.some(p => location.pathname.startsWith(p));
-
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // Get first letter of username for avatar
   const avatarLetter = user?.userName?.charAt(0).toUpperCase() || 'U';
+
+  const renderSection = (sec: NavSection) => (
+    <React.Fragment key={sec.key}>
+      <ListItem disablePadding>
+        <ListItemButton
+          onClick={() => toggleSection(sec.key)}
+          sx={itemStyle(isSectionActive(sec))}
+        >
+          <ListItemIcon sx={{ color: 'white' }}>{sec.icon}</ListItemIcon>
+          <ListItemText primary={sec.title} />
+          {openSections[sec.key] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </ListItemButton>
+      </ListItem>
+      <Collapse in={openSections[sec.key]} timeout="auto" unmountOnExit>
+        <List disablePadding>
+          {sec.subItems.map((sub) => (
+            <ListItem key={sub.path} disablePadding>
+              <ListItemButton
+                component={NavLink}
+                to={sub.path}
+                sx={subItemStyle(isActive(sub.path))}
+              >
+                <ListItemIcon sx={{ color: 'rgba(255,255,255,0.85)', minWidth: 32 }}>
+                  {sub.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={<Typography sx={{ fontSize: '0.85rem' }}>{sub.text}</Typography>}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Collapse>
+    </React.Fragment>
+  );
 
   const drawer = (
     <Box
@@ -109,8 +228,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         </Typography>
       </Toolbar>
 
-      {/* Navigation items */}
-      <List disablePadding sx={{ flex: 1 }}>
+      <List disablePadding sx={{ flex: 1, overflowY: 'auto' }}>
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/" sx={itemStyle(isActive('/'))}>
             <ListItemIcon sx={{ color: 'white' }}><DashboardIcon /></ListItemIcon>
@@ -118,18 +236,21 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
           </ListItemButton>
         </ListItem>
 
+        {/* Administration */}
         <ListItem disablePadding>
-          <ListItemButton onClick={() => setAdminOpen(!adminOpen)} sx={itemStyle(isAdminActive)}>
+          <ListItemButton
+            onClick={() => toggleSection('admin')}
+            sx={itemStyle(location.pathname.startsWith('/admin'))}
+          >
             <ListItemIcon sx={{ color: 'white' }}><SettingsIcon /></ListItemIcon>
             <ListItemText primary="Administration" />
-            {adminOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            {openSections['admin'] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </ListItemButton>
         </ListItem>
-
-        <Collapse in={adminOpen} timeout="auto" unmountOnExit>
+        <Collapse in={openSections['admin']} timeout="auto" unmountOnExit>
           <List disablePadding>
             {adminSubItems.map((sub) => (
-              <ListItem key={sub.text} disablePadding>
+              <ListItem key={sub.path} disablePadding>
                 <ListItemButton
                   component={NavLink}
                   to={sub.path}
@@ -147,42 +268,8 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
           </List>
         </Collapse>
 
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => setProductionOpen(!productionOpen)} sx={itemStyle(isProductionActive)}>
-            <ListItemIcon sx={{ color: 'white' }}><FactoryIcon /></ListItemIcon>
-            <ListItemText primary="Production" />
-            {productionOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </ListItemButton>
-        </ListItem>
-
-        <Collapse in={productionOpen} timeout="auto" unmountOnExit>
-          <List disablePadding>
-            {productionSubItems.map((sub) => (
-              <ListItem key={sub.text} disablePadding>
-                <ListItemButton
-                  component={NavLink}
-                  to={sub.path}
-                  sx={subItemStyle(isActive(sub.path))}
-                >
-                  <ListItemIcon sx={{ color: 'rgba(255,255,255,0.85)', minWidth: 32 }}>
-                    {sub.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={<Typography sx={{ fontSize: '0.85rem' }}>{sub.text}</Typography>}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Collapse>
-
-        <ListItem disablePadding>
-          <ListItemButton component={NavLink} to="/warehouse" sx={itemStyle(isActive('/warehouse'))}>
-
-            <ListItemIcon sx={{ color: 'white' }}><WarehouseIcon /></ListItemIcon>
-            <ListItemText primary="Warehouse" />
-          </ListItemButton>
-        </ListItem>
+        {/* Module sections */}
+        {navSections.map(renderSection)}
 
         <ListItem disablePadding>
           <ListItemButton component={NavLink} to="/po/demo" sx={itemStyle(isActive('/po/demo'))}>
@@ -214,23 +301,23 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
           sx={{
             borderRadius: 2,
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.15)' },
-            px: 1.5,
-            py: 1,
           }}
         >
-          <ListItemIcon sx={{ color: 'rgba(255,255,255,0.85)', minWidth: 34 }}>
+          <ListItemIcon sx={{ color: 'white', minWidth: 32 }}>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText
-            primary={<Typography sx={{ fontSize: '0.875rem' }}>Logout</Typography>}
-          />
+          <ListItemText primary={<Typography sx={{ fontSize: '0.85rem' }}>Logout</Typography>} />
         </ListItemButton>
       </Box>
     </Box>
   );
 
   return (
-    <>
+    <Box
+      component="nav"
+      sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+      aria-label="mailbox folders"
+    >
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -247,13 +334,13 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         variant="permanent"
         sx={{
           display: { xs: 'none', sm: 'block' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
         }}
         open
       >
         {drawer}
       </Drawer>
-    </>
+    </Box>
   );
 };
 
