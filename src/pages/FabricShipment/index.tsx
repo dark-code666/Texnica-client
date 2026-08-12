@@ -17,6 +17,7 @@ import { useFabricShipments } from '../../hooks/fabricShipments/useFabricShipmen
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FabricShipment } from '../../types';
 
 const DEFAULT_SHIPMENT_STATUSES = ['Planned', 'Booking Confirmed', 'Exported', 'In Transit', 'Delivered', 'Cancelled'];
@@ -35,7 +36,7 @@ const emptyForm = {
   RollQty: 0, ShippedQuantity: 0, UOM: 'Yards', ShippedWeight: 0,
   PackingList: '', InvoiceNumber: '', ContainerAWB: '', ShippingMethod: '',
   ETD: new Date().toISOString().split('T')[0], ETA: new Date().toISOString().split('T')[0],
-  ShipmentStatus: 'Planned', DeliveredToTexnicaDate: '', DataOwner: '', Remarks: '',
+  ShipmentStatus: 'Planned', DeliveredToTexnicaDate: '', DataOwnerId: 0, Remarks: '',
 };
 
 const FabricShipmentPage: React.FC = () => {
@@ -54,6 +55,7 @@ const FabricShipmentPage: React.FC = () => {
 
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const STATUS_OPTIONS = catalogs['ShipmentStatus']?.length ? catalogs['ShipmentStatus'] : DEFAULT_SHIPMENT_STATUSES;
   const UOM_OPTIONS = catalogs['UOM']?.length ? catalogs['UOM'] : DEFAULT_UOMS;
@@ -76,7 +78,7 @@ const FabricShipmentPage: React.FC = () => {
       ETD: item.etd?.split('T')[0] || '', ETA: item.eta?.split('T')[0] || '',
       ShipmentStatus: item.shipmentStatus || 'Planned',
       DeliveredToTexnicaDate: item.deliveredToTexnicaDate?.split('T')[0] || '',
-      DataOwner: item.dataOwner ?? '', Remarks: item.remarks ?? '',
+      DataOwnerId: userList.find(o => o.label === item.dataOwner)?.id ?? 0, Remarks: item.remarks ?? '',
     });
     setFormError(''); setDialogOpen(true);
   };
@@ -95,6 +97,7 @@ const FabricShipmentPage: React.FC = () => {
     try {
       const payload = {
         ...form,
+        DataOwnerId: form.DataOwnerId || null,
         ETD: form.ETD ? new Date(form.ETD).toISOString() : new Date().toISOString(),
         ETA: form.ETA ? new Date(form.ETA).toISOString() : new Date().toISOString(),
         DeliveredToTexnicaDate: form.DeliveredToTexnicaDate ? new Date(form.DeliveredToTexnicaDate).toISOString() : null,
@@ -265,7 +268,15 @@ const FabricShipmentPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Delivered to Texnica Date" type="date" value={form.DeliveredToTexnicaDate} onChange={e => setF('DeliveredToTexnicaDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Data Owner" value={form.DataOwner} onChange={e => setF('DataOwner', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Remarks / Notes" value={form.Remarks} onChange={e => setF('Remarks', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>

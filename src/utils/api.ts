@@ -88,6 +88,17 @@ export const factoriesApi = {
   getPaged: (params: any) => api.get('/factories/paged', { params }),
 };
 
+// Suppliers API
+export const suppliersApi = {
+  getAll: () => api.get('/suppliers'),
+  getById: (id: number) => api.get(`/suppliers/${id}`),
+  create: (data: any) => api.post('/suppliers', data),
+  update: (id: number, data: any) => api.put(`/suppliers/${id}`, data),
+  delete: (id: number) => api.delete(`/suppliers/${id}`),
+  search: (term: string) => api.get('/suppliers/search', { params: { term } }),
+  getPaged: (params: any) => api.get('/suppliers/paged', { params }),
+};
+
 // Fabric Requirements API
 export const fabricRequirementsApi = {
   getAll: () => api.get('/fabric-requirements'),
@@ -169,6 +180,34 @@ export const rollReceivingsApi = {
   getPaged: (params: any) => api.get('/roll-receivings/paged', { params }),
 };
 
+// Fabric Inventory API
+export const fabricInventoriesApi = {
+  getAll: () => api.get('/fabric-inventories'),
+  getById: (id: number) => api.get(`/fabric-inventories/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/fabric-inventories/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/fabric-inventories', data),
+  update: (id: number, data: any) => api.put(`/fabric-inventories/${id}`, data),
+  delete: (id: number) => api.delete(`/fabric-inventories/${id}`),
+  getPaged: (params: any) => api.get('/fabric-inventories/paged', { params }),
+};
+
+// Fabric Reservation API
+export const fabricReservationsApi = {
+  getAll: () => api.get('/fabric-reservations'),
+  getById: (id: number) => api.get(`/fabric-reservations/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/fabric-reservations/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/fabric-reservations', data),
+  update: (id: number, data: any) => api.put(`/fabric-reservations/${id}`, data),
+  delete: (id: number) => api.delete(`/fabric-reservations/${id}`),
+  getPaged: (params: any) => api.get('/fabric-reservations/paged', { params }),
+};
+
+// Lots API
+export const lotsApi = {
+  getAll: () => api.get('/lots'),
+  getById: (id: number) => api.get(`/lots/${id}`),
+};
+
 // Four-Point Inspection API
 export const fourPointApi = {
   getAll: () => api.get('/four-point'),
@@ -215,6 +254,229 @@ export const inlineQualitiesApi = {
   update: (id: number, data: any) => api.put(`/inline-qualities/${id}`, data),
   delete: (id: number) => api.delete(`/inline-qualities/${id}`),
   getPaged: (params: any) => api.get('/inline-qualities/paged', { params }),
+};
+
+// Endline Inspection API
+export const endlineInspectionsApi = {
+  getAll: () => api.get('/endline-inspections'),
+  getById: (id: number) => api.get(`/endline-inspections/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/endline-inspections/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/endline-inspections', data),
+  update: (id: number, data: any) => api.put(`/endline-inspections/${id}`, data),
+  delete: (id: number) => api.delete(`/endline-inspections/${id}`),
+  getPaged: (params: any) => api.get('/endline-inspections/paged', { params }),
+};
+
+
+// Pre-Final Inspection API
+export const preFinalInspectionsApi = {
+  getAll: () => api.get('/pre-final-inspections'),
+  getById: (id: number) => api.get(`/pre-final-inspections/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/pre-final-inspections/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/pre-final-inspections', data),
+  update: (id: number, data: any) => api.put(`/pre-final-inspections/${id}`, data),
+  delete: (id: number) => api.delete(`/pre-final-inspections/${id}`),
+  getPaged: (params: any) => api.get('/pre-final-inspections/paged', { params }),
+};
+
+// Final Inspection API
+export const finalInspectionsApi = {
+  getAll: () => api.get('/final-inspections'),
+  getById: (id: number) => api.get(`/final-inspections/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/final-inspections/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/final-inspections', data),
+  update: (id: number, data: any) => api.put(`/final-inspections/${id}`, data),
+  delete: (id: number) => api.delete(`/final-inspections/${id}`),
+  getPaged: (params: any) => api.get('/final-inspections/paged', { params }),
+};
+
+// PP Sample API
+export const ppSamplesApi = {
+  getAll: () => api.get('/pp-samples'),
+  getById: (id: number) => api.get(`/pp-samples/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/pp-samples/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/pp-samples', data),
+  update: (id: number, data: any) => api.put(`/pp-samples/${id}`, data),
+  delete: (id: number) => api.delete(`/pp-samples/${id}`),
+  getPaged: (params: any) => api.get('/pp-samples/paged', { params }),
+};
+
+// TOP Sample API
+export const topSamplesApi = {
+  getAll: () => api.get('/top-samples'),
+  getById: (id: number) => api.get(`/top-samples/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/top-samples/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/top-samples', data),
+  update: (id: number, data: any) => api.put(`/top-samples/${id}`, data),
+  delete: (id: number) => api.delete(`/top-samples/${id}`),
+  getPaged: (params: any) => api.get('/top-samples/paged', { params }),
+};
+
+// Production Readiness API
+export const productionReadinessApi = {
+  getAll: () => api.get('/production-readiness'),
+  getById: (id: number) => api.get(`/production-readiness/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/production-readiness/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/production-readiness', data),
+  update: (id: number, data: any) => api.put(`/production-readiness/${id}`, data),
+  delete: (id: number) => api.delete(`/production-readiness/${id}`),
+  getPaged: (params: any) => api.get('/production-readiness/paged', { params }),
+};
+
+// Cutting Release API
+export const cuttingReleasesApi = {
+  getAll: () => api.get('/cutting-releases'),
+  getById: (id: number) => api.get(`/cutting-releases/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/cutting-releases/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/cutting-releases', data),
+  update: (id: number, data: any) => api.put(`/cutting-releases/${id}`, data),
+  delete: (id: number) => api.delete(`/cutting-releases/${id}`),
+  getPaged: (params: any) => api.get('/cutting-releases/paged', { params }),
+};
+
+// Cutting Control API
+export const cuttingControlsApi = {
+  getAll: () => api.get('/cutting-controls'),
+  getById: (id: number) => api.get(`/cutting-controls/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/cutting-controls/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/cutting-controls', data),
+  update: (id: number, data: any) => api.put(`/cutting-controls/${id}`, data),
+  delete: (id: number) => api.delete(`/cutting-controls/${id}`),
+  getPaged: (params: any) => api.get('/cutting-controls/paged', { params }),
+};
+
+// Cutting Panel QC API
+export const cuttingPanelQcsApi = {
+  getAll: () => api.get('/cutting-panel-qcs'),
+  getById: (id: number) => api.get(`/cutting-panel-qcs/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/cutting-panel-qcs/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/cutting-panel-qcs', data),
+  update: (id: number, data: any) => api.put(`/cutting-panel-qcs/${id}`, data),
+  delete: (id: number) => api.delete(`/cutting-panel-qcs/${id}`),
+  getPaged: (params: any) => api.get('/cutting-panel-qcs/paged', { params }),
+};
+
+// Style API
+export const stylesApi = {
+  getAll: () => api.get('/styles'),
+  getById: (id: number) => api.get(`/styles/${id}`),
+  search: (term?: string) => api.get('/styles/search', { params: { term } }),
+  create: (data: any) => api.post('/styles', data),
+  update: (id: number, data: any) => api.put(`/styles/${id}`, data),
+  delete: (id: number) => api.delete(`/styles/${id}`),
+};
+
+// Fabric API
+export const fabricsApi = {
+  getAll: () => api.get('/fabrics'),
+  getById: (id: number) => api.get(`/fabrics/${id}`),
+  search: (term?: string) => api.get('/fabrics/search', { params: { term } }),
+  create: (data: any) => api.post('/fabrics', data),
+  update: (id: number, data: any) => api.put(`/fabrics/${id}`, data),
+  delete: (id: number) => api.delete(`/fabrics/${id}`),
+};
+
+// Color API
+export const colorsApi = {
+  getAll: () => api.get('/colors'),
+  getById: (id: number) => api.get(`/colors/${id}`),
+  search: (term?: string) => api.get('/colors/search', { params: { term } }),
+  create: (data: any) => api.post('/colors', data),
+  update: (id: number, data: any) => api.put(`/colors/${id}`, data),
+  delete: (id: number) => api.delete(`/colors/${id}`),
+};
+
+// Size API
+export const sizesApi = {
+  getAll: () => api.get('/sizes'),
+  getById: (id: number) => api.get(`/sizes/${id}`),
+  search: (term?: string) => api.get('/sizes/search', { params: { term } }),
+  create: (data: any) => api.post('/sizes', data),
+  update: (id: number, data: any) => api.put(`/sizes/${id}`, data),
+  delete: (id: number) => api.delete(`/sizes/${id}`),
+};
+
+// Component API
+export const componentsApi = {
+  getAll: () => api.get('/components'),
+  getById: (id: number) => api.get(`/components/${id}`),
+  search: (term?: string) => api.get('/components/search', { params: { term } }),
+  create: (data: any) => api.post('/components', data),
+  update: (id: number, data: any) => api.put(`/components/${id}`, data),
+  delete: (id: number) => api.delete(`/components/${id}`),
+};
+
+// BoxType API
+export const boxTypesApi = {
+  getAll: () => api.get('/box-types'),
+  getById: (id: number) => api.get(`/box-types/${id}`),
+  search: (term?: string) => api.get('/box-types/search', { params: { term } }),
+  create: (data: any) => api.post('/box-types', data),
+  update: (id: number, data: any) => api.put(`/box-types/${id}`, data),
+  delete: (id: number) => api.delete(`/box-types/${id}`),
+};
+
+// StyleYield API
+export const styleYieldsApi = {
+  getAll: () => api.get('/style-yields'),
+  getById: (id: number) => api.get(`/style-yields/${id}`),
+  getByStyle: (styleId: number) => api.get(`/style-yields/style/${styleId}`),
+  create: (data: any) => api.post('/style-yields', data),
+  update: (id: number, data: any) => api.put(`/style-yields/${id}`, data),
+  delete: (id: number) => api.delete(`/style-yields/${id}`),
+};
+
+// Price API
+export const pricesApi = {
+  getAll: () => api.get('/prices'),
+  getById: (id: number) => api.get(`/prices/${id}`),
+  getByStyle: (styleId: number) => api.get(`/prices/style/${styleId}`),
+  create: (data: any) => api.post('/prices', data),
+  update: (id: number, data: any) => api.put(`/prices/${id}`, data),
+  delete: (id: number) => api.delete(`/prices/${id}`),
+};
+
+// FgpoLine API
+export const fgpoLinesApi = {
+  getAll: () => api.get('/fgpo-lines'),
+  getById: (id: number) => api.get(`/fgpo-lines/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/fgpo-lines/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/fgpo-lines', data),
+  update: (id: number, data: any) => api.put(`/fgpo-lines/${id}`, data),
+  delete: (id: number) => api.delete(`/fgpo-lines/${id}`),
+};
+
+// Trims Control API
+export const trimsControlsApi = {
+  getAll: () => api.get('/trims-controls'),
+  getById: (id: number) => api.get(`/trims-controls/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/trims-controls/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/trims-controls', data),
+  update: (id: number, data: any) => api.put(`/trims-controls/${id}`, data),
+  delete: (id: number) => api.delete(`/trims-controls/${id}`),
+  getPaged: (params: any) => api.get('/trims-controls/paged', { params }),
+};
+
+// Sewing Production API
+export const sewingProductionsApi = {
+  getAll: () => api.get('/sewing-productions'),
+  getById: (id: number) => api.get(`/sewing-productions/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/sewing-productions/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/sewing-productions', data),
+  update: (id: number, data: any) => api.put(`/sewing-productions/${id}`, data),
+  delete: (id: number) => api.delete(`/sewing-productions/${id}`),
+  getPaged: (params: any) => api.get('/sewing-productions/paged', { params }),
+};
+
+// AQL Inspections API (Endline / Pre-Final / Final unificados)
+export const aqlInspectionsApi = {
+  getAll: (params?: any) => api.get('/aql-inspections', { params }),
+  getById: (id: number) => api.get(`/aql-inspections/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/aql-inspections/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/aql-inspections', data),
+  update: (id: number, data: any) => api.put(`/aql-inspections/${id}`, data),
+  delete: (id: number) => api.delete(`/aql-inspections/${id}`),
+  getPaged: (params: any) => api.get('/aql-inspections', { params }),
 };
 
 // Auth API

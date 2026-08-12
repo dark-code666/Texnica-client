@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { fgpoApi, customersApi } from '../../utils/api';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 
 interface Fgpo {
   ID: number;
@@ -34,7 +35,8 @@ interface Fgpo {
   ProductionVariance: number;
   PendingProduction: number;
   OverproductionQty: number;
-  DataOwner?: string;
+  DataOwnerId?: number;
+  DataOwnerName?: string;
   Remarks?: string;
   Active: boolean;
   CreatedAt: string;
@@ -59,7 +61,7 @@ interface FgpoForm {
   ReceivedQty: number;
   TotalShippedQty: number;
   ProducedQty: number;
-  DataOwner: string;
+  DataOwnerId: number;
   Remarks: string;
 }
 
@@ -76,7 +78,7 @@ const emptyForm: FgpoForm = {
   ReceivedQty: 0,
   TotalShippedQty: 0,
   ProducedQty: 0,
-  DataOwner: '',
+  DataOwnerId: 0,
   Remarks: '',
 };
 
@@ -108,7 +110,8 @@ const mapFgpo = (raw: any): Fgpo => ({
   ProductionVariance: raw.productionVariance ?? raw.ProductionVariance ?? 0,
   PendingProduction: raw.pendingProduction ?? raw.PendingProduction ?? 0,
   OverproductionQty: raw.overproductionQty ?? raw.OverproductionQty ?? 0,
-  DataOwner: raw.dataOwner ?? raw.DataOwner,
+  DataOwnerId: raw.dataOwnerId ?? raw.DataOwnerId ?? undefined,
+  DataOwnerName: raw.dataOwnerName ?? raw.DataOwnerName ?? raw.dataOwner ?? raw.DataOwner,
   Remarks: raw.remarks ?? raw.Remarks,
   Active: raw.active ?? raw.Active ?? true,
   CreatedAt: raw.createdAt ?? raw.CreatedAt ?? '',
@@ -145,6 +148,7 @@ const Fgpo: React.FC = () => {
 
   // Customer options for dropdowns
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const { options: userList } = useUserOptions();
 
   useEffect(() => {
     loadData();
@@ -230,7 +234,7 @@ const Fgpo: React.FC = () => {
       ReceivedQty: fgpo.ReceivedQty,
       TotalShippedQty: fgpo.TotalShippedQty,
       ProducedQty: fgpo.ProducedQty,
-      DataOwner: fgpo.DataOwner || '',
+      DataOwnerId: fgpo.DataOwnerId || 0,
       Remarks: fgpo.Remarks || '',
     });
     setFormError('');
@@ -270,6 +274,7 @@ const Fgpo: React.FC = () => {
 
     const payload = {
       ...form,
+      DataOwnerId: form.DataOwnerId || null,
       OrderQuantity: Number(form.OrderQuantity),
       InTransitQty: Number(form.InTransitQty),
       ReceivedQty: Number(form.ReceivedQty),
@@ -483,7 +488,7 @@ const Fgpo: React.FC = () => {
                   <TableCell align="right">{formatNumber(fgpo.ProductionVariance)}</TableCell>
                   <TableCell align="right">{formatNumber(fgpo.PendingProduction)}</TableCell>
                   <TableCell align="right">{formatNumber(fgpo.OverproductionQty)}</TableCell>
-                  <TableCell>{fgpo.DataOwner || '-'}</TableCell>
+                  <TableCell>{fgpo.DataOwnerName || '-'}</TableCell>
                   <TableCell>{formatDate(fgpo.UpdatedAt || fgpo.CreatedAt)}</TableCell>
                   <TableCell>
                     <Tooltip title="Edit">
@@ -621,12 +626,17 @@ const Fgpo: React.FC = () => {
                 value={form.ProducedQty}
                 onChange={e => setForm({ ...form, ProducedQty: Number(e.target.value) })}
               />
-              <TextField
-                label="Data Owner"
-                size="small"
-                value={form.DataOwner}
-                onChange={e => setForm({ ...form, DataOwner: e.target.value })}
-              />
+              <FormControl size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select
+                  label="Data Owner"
+                  value={form.DataOwnerId || ''}
+                  onChange={e => setForm({ ...form, DataOwnerId: Number(e.target.value) })}
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
+                </Select>
+              </FormControl>
               <TextField
                 label="Remarks"
                 size="small"

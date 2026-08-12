@@ -17,10 +17,10 @@ import { useMillProductions } from '../../hooks/millProductions/useMillProductio
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { MillProduction } from '../../types';
 
 const DEFAULT_STATUS_OPTIONS = ['Not Started', 'Pending', 'In Progress', 'Partially Completed', 'Completed', 'On Hold', 'Cancelled'];
-const DEFAULT_FABRIC_COMPONENTS = ['Body Fabric', 'Rib', 'Shoulder Tape', 'Neck Tape', 'Pocketing', 'Other'];
 
 const sc = (s: string) => {
   const m: Record<string, any> = { Completed: 'success', 'In Progress': 'info', 'Partially Completed': 'primary', Pending: 'warning', 'On Hold': 'warning', Cancelled: 'error' };
@@ -32,7 +32,7 @@ const emptyForm = {
   PlannedQuantity: 0, ProducedQuantity: 0, LotNumber: '', RollQuantity: 0,
   YardageOrQty: 0, Weight: 0,
   StartDate: new Date().toISOString().split('T')[0], FinishDate: '',
-  PlannedExport: '', ActualExport: '', Status: 'Not Started', DataOwner: '', Remarks: '',
+  PlannedExport: '', ActualExport: '', Status: 'Not Started', DataOwnerId: 0, Remarks: '',
 };
 
 const MillProductionPage: React.FC = () => {
@@ -51,9 +51,9 @@ const MillProductionPage: React.FC = () => {
 
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const STATUS_OPTIONS = catalogs['ProductionStatus']?.length ? catalogs['ProductionStatus'] : DEFAULT_STATUS_OPTIONS;
-  const FABRIC_COMPONENT_OPTIONS = catalogs['FabricComponent']?.length ? catalogs['FabricComponent'] : DEFAULT_FABRIC_COMPONENTS;
 
   const [form, setForm] = useState(emptyForm);
 
@@ -76,7 +76,7 @@ const MillProductionPage: React.FC = () => {
       FinishDate: item.finishDate?.split('T')[0] || '',
       PlannedExport: item.plannedExport?.split('T')[0] || '',
       ActualExport: item.actualExport?.split('T')[0] || '',
-      Status: item.status || 'Not Started', DataOwner: item.dataOwner || '', Remarks: item.remarks || '',
+      Status: item.status || 'Not Started', DataOwnerId: userList.find(o => o.label === item.dataOwner)?.id ?? 0, Remarks: item.remarks || '',
     });
     setFormError(''); setDialogOpen(true);
   };
@@ -92,7 +92,7 @@ const MillProductionPage: React.FC = () => {
     if (!form.FabricPOId || !form.FGPOId) { setFormError('Fabric PO and FGPO are required.'); return; }
     if (!form.LotNumber) { setFormError('Lot Number is required.'); return; }
     try {
-      const payload = { ...form, FinishDate: form.FinishDate || null, PlannedExport: form.PlannedExport || null, ActualExport: form.ActualExport || null };
+      const payload = { ...form, DataOwnerId: form.DataOwnerId || null, FinishDate: form.FinishDate || null, PlannedExport: form.PlannedExport || null, ActualExport: form.ActualExport || null };
       if (editingId) await update(editingId, payload);
       else await create(payload);
       setDialogOpen(false);
@@ -205,6 +205,7 @@ const MillProductionPage: React.FC = () => {
                   const po = poList.find((p: any) => (p.id ?? p.ID) === v);
                   setF('FabricPOId', v);
                   setF('Supplier', (po?.supplier) || form.Supplier);
+                  setF('FabricComponent', (po as any)?.meta?.fabricComponent || form.FabricComponent);
                 }}>
                   <MenuItem value=""><em>Select a Fabric PO...</em></MenuItem>
                   {poList.map((p: any) => <MenuItem key={p.id ?? p.ID} value={p.id ?? p.ID}>{p.fabricPONumber ?? p.FabricPONumber} {(p.supplier ?? p.Supplier) ? `— ${p.supplier ?? p.Supplier}` : ''}</MenuItem>)}
@@ -224,14 +225,10 @@ const MillProductionPage: React.FC = () => {
             {/* ── General Info ── */}
             <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">General Information</Typography></Divider></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField fullWidth size="small" label="Supplier" value={form.Supplier} onChange={e => setF('Supplier', e.target.value)} />
+              <TextField fullWidth size="small" label="Supplier" value={form.Supplier} disabled />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <FormControl fullWidth size="small"><InputLabel>Fabric Component</InputLabel>
-                <Select value={form.FabricComponent} label="Fabric Component" onChange={e => setF('FabricComponent', e.target.value)}>
-                  {FABRIC_COMPONENT_OPTIONS.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-                </Select>
-              </FormControl>
+              <TextField fullWidth size="small" label="Fabric Component" value={form.FabricComponent} disabled />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField fullWidth size="small" label="Style" value={form.Style} onChange={e => setF('Style', e.target.value)} />
@@ -283,7 +280,13 @@ const MillProductionPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField fullWidth size="small" label="Data Owner" value={form.DataOwner} onChange={e => setF('DataOwner', e.target.value)} />
+              <FormControl fullWidth size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
             </Grid>
 
             {/* ── Remarks ── */}

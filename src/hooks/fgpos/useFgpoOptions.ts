@@ -15,6 +15,12 @@ export const useFgpoOptions = () => {
         id: f.id ?? f.ID,
         label: f.fgpoNumber ?? f.FGPONumber ?? '',
         sub: f.customerName ?? f.CustomerName ?? '',
+        meta: {
+          sizeId: f.sizeId ?? f.SizeId ?? undefined,
+          sizeCode: f.sizeCode ?? f.SizeCode ?? '',
+          style: f.style ?? f.Style ?? '',
+          color: f.color ?? f.Color ?? '',
+        },
       })));
     } catch {
       /* mantiene opciones vacías */

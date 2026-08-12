@@ -17,6 +17,7 @@ import { useFabricReceivings } from '../../hooks/fabricReceivings/useFabricRecei
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FabricReceiving } from '../../types';
 
 const DEFAULT_STATUSES = ['Pending', 'Partially Received', 'Fully Received', 'Quantity Difference', 'Rejected'];
@@ -33,7 +34,7 @@ const emptyForm = {
   ReceivingNumber: '', ReceivingDate: new Date().toISOString().split('T')[0],
   ShipmentNumber: '', FabricPOId: 0, FGPOId: 0, Supplier: '',
   PackingListQty: 0, ActualReceivedQty: 0, ExpectedRolls: 0, ReceivedRolls: 0,
-  ReceivingStatus: 'Pending', WarehouseLocation: '', ReceivedBy: '', DataOwner: '', Remarks: '',
+  ReceivingStatus: 'Pending', WarehouseLocation: '', ReceivedByUserId: 0, DataOwnerId: 0, Remarks: '',
 };
 
 const FabricReceivingPage: React.FC = () => {
@@ -52,6 +53,7 @@ const FabricReceivingPage: React.FC = () => {
 
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const STATUS_OPTIONS = catalogs['ReceivingStatus']?.length ? catalogs['ReceivingStatus'] : DEFAULT_STATUSES;
 
@@ -72,8 +74,8 @@ const FabricReceivingPage: React.FC = () => {
       PackingListQty: item.packingListQty, ActualReceivedQty: item.actualReceivedQty,
       ExpectedRolls: item.expectedRolls, ReceivedRolls: item.receivedRolls,
       ReceivingStatus: item.receivingStatus || 'Pending',
-      WarehouseLocation: item.warehouseLocation ?? '', ReceivedBy: item.receivedBy ?? '',
-      DataOwner: item.dataOwner ?? '', Remarks: item.remarks ?? '',
+      WarehouseLocation: item.warehouseLocation ?? '', ReceivedByUserId: userList.find(o => o.label === item.receivedBy)?.id ?? 0,
+      DataOwnerId: userList.find(o => o.label === item.dataOwner)?.id ?? 0, Remarks: item.remarks ?? '',
     });
     setFormError(''); setDialogOpen(true);
   };
@@ -91,6 +93,8 @@ const FabricReceivingPage: React.FC = () => {
     try {
       const payload = {
         ...form,
+        ReceivedByUserId: form.ReceivedByUserId || null,
+        DataOwnerId: form.DataOwnerId || null,
         ReceivingDate: form.ReceivingDate ? new Date(form.ReceivingDate).toISOString() : new Date().toISOString(),
       };
       if (editingId) await update(editingId, payload);
@@ -246,8 +250,24 @@ const FabricReceivingPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Warehouse Location" value={form.WarehouseLocation} onChange={e => setF('WarehouseLocation', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Received By" value={form.ReceivedBy} onChange={e => setF('ReceivedBy', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Data Owner" value={form.DataOwner} onChange={e => setF('DataOwner', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Received By</InputLabel>
+                <Select value={form.ReceivedByUserId || ''} label="Received By" onChange={e => setF('ReceivedByUserId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Remarks / Notes" value={form.Remarks} onChange={e => setF('Remarks', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>

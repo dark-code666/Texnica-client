@@ -17,6 +17,7 @@ import { useFourPoints } from '../../hooks/fourPoints/useFourPoints';
 import { useFabricReceivingOptions } from '../../hooks/fabricReceivings/useFabricReceivingOptions';
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FourPoint } from '../../types';
 
 const sc = (s: string) => {
@@ -32,7 +33,7 @@ const emptyForm = {
   Points1: 0, Points2: 0, Points3: 0, Points4: 0,
   MaxAllowed: 40,
   AcceptedQty: 0, RejectedQty: 0, HoldQty: 0,
-  Inspector: '', ReportLink: '', Comments: '',
+  InspectorId: 0, ReportLink: '', Comments: '',
 };
 
 const FourPointPage: React.FC = () => {
@@ -52,6 +53,7 @@ const FourPointPage: React.FC = () => {
   const { options: receivingList } = useFabricReceivingOptions();
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
 
   const [form, setForm] = useState(emptyForm);
 
@@ -71,7 +73,7 @@ const FourPointPage: React.FC = () => {
       Points1: item.points1, Points2: item.points2, Points3: item.points3, Points4: item.points4,
       MaxAllowed: item.maxAllowed,
       AcceptedQty: item.acceptedQty, RejectedQty: item.rejectedQty, HoldQty: item.holdQty,
-      Inspector: item.inspector ?? '', ReportLink: item.reportLink ?? '', Comments: item.comments ?? '',
+      InspectorId: userList.find(o => o.label === item.inspector)?.id ?? 0, ReportLink: item.reportLink ?? '', Comments: item.comments ?? '',
     });
     setFormError(''); setDialogOpen(true);
   };
@@ -90,6 +92,7 @@ const FourPointPage: React.FC = () => {
       const payload = {
         ...form,
         ReceivingId: form.ReceivingId || null,
+        InspectorId: form.InspectorId || null,
         InspectionDate: form.InspectionDate ? new Date(form.InspectionDate).toISOString() : new Date().toISOString(),
       };
       if (editingId) await update(editingId, payload);
@@ -233,7 +236,15 @@ const FourPointPage: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Width (in) *" type="number" value={form.Width || ''} onChange={e => setF('Width', Number(e.target.value))} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Inspected Length (yd) *" type="number" value={form.InspectedLength || ''} onChange={e => setF('InspectedLength', Number(e.target.value))} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Max Allowed" type="number" value={form.MaxAllowed || ''} onChange={e => setF('MaxAllowed', Number(e.target.value))} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Inspector" value={form.Inspector} onChange={e => setF('Inspector', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Inspector</InputLabel>
+                <Select value={form.InspectorId || ''} label="Inspector" onChange={e => setF('InspectorId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
 
             <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Defectos por tipo (Four-Point)</Typography></Divider></Grid>
             <Grid size={{ xs: 6, sm: 3 }}><TextField fullWidth size="small" label="1-Point" type="number" value={form.Points1 || ''} onChange={e => setF('Points1', Number(e.target.value))} /></Grid>

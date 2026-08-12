@@ -17,6 +17,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useRollReceivings } from '../../hooks/rollReceivings/useRollReceivings';
 import { useFabricReceivingOptions, FabricReceivingOption } from '../../hooks/fabricReceivings/useFabricReceivingOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { RollReceiving } from '../../types';
 
 const DEFAULT_CONDITIONS = ['Good', 'Damaged', 'Second Quality', 'Sample'];
@@ -35,7 +36,7 @@ const emptyForm = {
   GrossWeight: 0, NetWeight: 0, ActualYardage: 0, ActualWidth: 0, ActualGSM: 0,
   ShadeGroup: '', DamagedQty: 0, Condition: 'Good',
   WarehouseLocation: '', ReceivedDate: new Date().toISOString().split('T')[0],
-  DataOwner: '', Comments: '',
+  DataOwnerId: 0, Comments: '',
 };
 
 const RollReceivingPage: React.FC = () => {
@@ -53,6 +54,7 @@ const RollReceivingPage: React.FC = () => {
   const [formError, setFormError] = useState('');
 
   const { options: receivingList } = useFabricReceivingOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const CONDITION_OPTIONS = catalogs['RollCondition']?.length ? catalogs['RollCondition'] : DEFAULT_CONDITIONS;
   const SHADE_OPTIONS = catalogs['ShadeGroup']?.length ? catalogs['ShadeGroup'] : DEFAULT_SHADE_GROUPS;
@@ -80,7 +82,7 @@ const RollReceivingPage: React.FC = () => {
       Condition: item.condition || 'Good',
       WarehouseLocation: item.warehouseLocation ?? '',
       ReceivedDate: item.receivedDate?.split('T')[0] || '',
-      DataOwner: item.dataOwner ?? '', Comments: item.comments ?? '',
+      DataOwnerId: userList.find(o => o.label === item.dataOwner)?.id ?? 0, Comments: item.comments ?? '',
     });
     setFormError(''); setDialogOpen(true);
   };
@@ -100,7 +102,7 @@ const RollReceivingPage: React.FC = () => {
       // Solo auto-rellenar si el usuario aún no escribió nada en esos campos
       WarehouseLocation: prev.WarehouseLocation || rec?.warehouseLocation || '',
       ReceivedDate: prev.ReceivedDate || rec?.receivingDate?.split('T')[0] || new Date().toISOString().split('T')[0],
-      DataOwner: prev.DataOwner || rec?.dataOwner || '',
+      DataOwnerId: prev.DataOwnerId || rec?.dataOwnerId || (rec?.dataOwner ? (userList.find(o => o.label === rec?.dataOwner)?.id ?? 0) : 0),
     }));
   };
 
@@ -111,6 +113,7 @@ const RollReceivingPage: React.FC = () => {
     try {
       const payload = {
         ...form,
+        DataOwnerId: form.DataOwnerId || null,
         // El backend deriva FabricPO/FGPO/Supplier/Color desde el receiving
         ReceivedDate: form.ReceivedDate ? new Date(form.ReceivedDate).toISOString() : new Date().toISOString(),
       };
@@ -277,7 +280,15 @@ const RollReceivingPage: React.FC = () => {
 
             <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Almacén & Notas</Typography></Divider></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Warehouse Location" value={form.WarehouseLocation} onChange={e => setF('WarehouseLocation', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Data Owner" value={form.DataOwner} onChange={e => setF('DataOwner', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>

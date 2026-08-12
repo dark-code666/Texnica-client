@@ -15,6 +15,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useInlineQualities } from '../../hooks/inlineQualities/useInlineQualities';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { InlineQuality } from '../../types';
 
 const sc = (s: string) => {
@@ -28,7 +29,7 @@ const emptyForm = {
   Operation: '', Operator: '',
   CheckedQty: 0, CriticalDefects: 0, MajorDefects: 0, MinorDefects: 0,
   DefectivePieces: 0, MaxAllowed: 3,
-  Inspector: '', ImmediateCorrection: '', RootCause: '',
+  InspectorId: 0, ImmediateCorrection: '', RootCause: '',
 };
 
 const InlineQualityPage: React.FC = () => {
@@ -46,6 +47,7 @@ const InlineQualityPage: React.FC = () => {
   const [formError, setFormError] = useState('');
 
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
 
   const [form, setForm] = useState(emptyForm);
 
@@ -64,7 +66,7 @@ const InlineQualityPage: React.FC = () => {
       CheckedQty: item.checkedQty, CriticalDefects: item.criticalDefects,
       MajorDefects: item.majorDefects, MinorDefects: item.minorDefects,
       DefectivePieces: item.defectivePieces, MaxAllowed: item.maxAllowed,
-      Inspector: item.inspector ?? '', ImmediateCorrection: item.immediateCorrection ?? '',
+      InspectorId: userList.find(o => o.label === item.inspector)?.id ?? 0, ImmediateCorrection: item.immediateCorrection ?? '',
       RootCause: item.rootCause ?? '',
     });
     setFormError(''); setDialogOpen(true);
@@ -83,6 +85,7 @@ const InlineQualityPage: React.FC = () => {
     try {
       const payload = {
         ...form,
+        InspectorId: form.InspectorId || null,
         InspectionDate: form.InspectionDate ? new Date(form.InspectionDate).toISOString() : new Date().toISOString(),
       };
       if (editingId) await update(editingId, payload);
@@ -213,7 +216,15 @@ const InlineQualityPage: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Minor Defects" type="number" value={form.MinorDefects || ''} onChange={e => setF('MinorDefects', Number(e.target.value))} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Defective Pieces" type="number" value={form.DefectivePieces || ''} onChange={e => setF('DefectivePieces', Number(e.target.value))} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Max Allowed (%)" type="number" value={form.MaxAllowed || ''} onChange={e => setF('MaxAllowed', Number(e.target.value))} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Inspector" value={form.Inspector} onChange={e => setF('Inspector', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Inspector</InputLabel>
+                <Select value={form.InspectorId || ''} label="Inspector" onChange={e => setF('InspectorId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
 
             <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Acción & Causa</Typography></Divider></Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Immediate Correction" value={form.ImmediateCorrection} onChange={e => setF('ImmediateCorrection', e.target.value)} /></Grid>

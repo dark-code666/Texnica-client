@@ -15,6 +15,7 @@ export interface FabricReceivingOption {
   warehouseLocation?: string;
   receivedBy?: string;
   dataOwner?: string;
+  dataOwnerId?: number;
 }
 
 /** Hook de opciones de Fabric Receiving para selects/autocompletes (usa getAll) */
@@ -40,6 +41,7 @@ export const useFabricReceivingOptions = () => {
         warehouseLocation: r.warehouseLocation ?? r.WarehouseLocation ?? '',
         receivedBy: r.receivedBy ?? r.ReceivedBy ?? '',
         dataOwner: r.dataOwner ?? r.DataOwner ?? '',
+        dataOwnerId: r.dataOwnerId ?? r.DataOwnerId ?? undefined,
       })));
     } catch {
       /* mantiene opciones vacías */

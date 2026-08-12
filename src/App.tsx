@@ -17,6 +17,7 @@ import AdminClientes from './pages/AdminClientes';
 import AdminPermisos from './pages/AdminPermisos';
 import Customers from './pages/Customers';
 import Factories from './pages/Factories';
+import Suppliers from './pages/Suppliers';
 import Production from './pages/Production';
 import Warehouse from './pages/Warehouse';
 import PurchaseOrder from './pages/PurchaseOrder';
@@ -33,9 +34,7 @@ import FourPoint from './pages/FourPoint';
 import InternalTest from './pages/InternalTest';
 import ShadeMatch from './pages/ShadeMatch';
 import InlineQuality from './pages/InlineQuality';
-import EndlineInspection from './pages/EndlineInspection';
-import PreFinalInspection from './pages/PreFinalInspection';
-import FinalInspection from './pages/FinalInspection';
+import AqlInspection from './pages/AqlInspection';
 import PPSample from './pages/PPSample';
 import TOPSample from './pages/TOPSample';
 import ProductionReadiness from './pages/ProductionReadiness';
@@ -47,6 +46,15 @@ import SewingProduction from './pages/SewingProduction';
 import FabricInventory from './pages/FabricInventory';
 import FabricReservation from './pages/FabricReservation';
 import PackingControl from './pages/PackingControl';
+import StylesPage from './pages/Styles';
+import FabricsPage from './pages/Fabrics';
+import ColorsPage from './pages/Colors';
+import SizesPage from './pages/Sizes';
+import ComponentsPage from './pages/Components';
+import BoxTypesPage from './pages/BoxTypes';
+import StyleYieldsPage from './pages/StyleYields';
+import PricesPage from './pages/Prices';
+import FgpoLinesPage from './pages/FgpoLines';
 import FinishedGoods from './pages/FinishedGoods';
 import ShipmentControl from './pages/ShipmentControl';
 
@@ -190,6 +198,16 @@ function App() {
                   <Route path="admin/permisos" element={<AdminPermisos />} />
                   <Route path="admin/customers" element={<Customers />} />
                   <Route path="admin/factories" element={<Factories />} />
+                  <Route path="admin/suppliers" element={<Suppliers />} />
+                  <Route path="admin/styles" element={<StylesPage />} />
+                  <Route path="admin/fabrics" element={<FabricsPage />} />
+                  <Route path="admin/colors" element={<ColorsPage />} />
+                  <Route path="admin/sizes" element={<SizesPage />} />
+                  <Route path="admin/components" element={<ComponentsPage />} />
+                  <Route path="admin/box-types" element={<BoxTypesPage />} />
+                  <Route path="admin/style-yields" element={<StyleYieldsPage />} />
+                  <Route path="admin/prices" element={<PricesPage />} />
+                  <Route path="admin/fgpo-lines" element={<FgpoLinesPage />} />
                   <Route path="production" element={<Production />} />
 
                   <Route path="fgpo" element={<Fgpo />} />
@@ -204,9 +222,9 @@ function App() {
                   <Route path="internal-test" element={<InternalTest />} />
                   <Route path="shade-match" element={<ShadeMatch />} />
                   <Route path="inline-quality" element={<InlineQuality />} />
-                  <Route path="endline-inspection" element={<EndlineInspection />} />
-                  <Route path="pre-final-inspection" element={<PreFinalInspection />} />
-                  <Route path="final-inspection" element={<FinalInspection />} />
+                  <Route path="endline-inspection" element={<AqlInspection inspectionType="Endline" title="Endline Inspection" subtitle="Inspección de fin de línea con muestreo AQL (Result automático)" />} />
+                  <Route path="pre-final-inspection" element={<AqlInspection inspectionType="PreFinal" title="Pre-Final Inspection" subtitle="Inspección pre-final con muestreo AQL (Result automático)" />} />
+                  <Route path="final-inspection" element={<AqlInspection inspectionType="Final" title="Final Inspection" subtitle="Inspección final con muestreo AQL (Result automático)" />} />
                   <Route path="pp-sample" element={<PPSample />} />
                   <Route path="top-sample" element={<TOPSample />} />
                   <Route path="production-readiness" element={<ProductionReadiness />} />

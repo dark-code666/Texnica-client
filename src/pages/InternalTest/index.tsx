@@ -17,6 +17,7 @@ import { useInternalTests } from '../../hooks/internalTests/useInternalTests';
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { InternalTest } from '../../types';
 
 const sc = (s: string) => {
@@ -32,7 +33,7 @@ const emptyForm = {
   LengthBefore: 0, LengthAfter: 0, WidthBefore: 0, WidthAfter: 0,
   TorquePct: 0, BowingPct: 0, SkewingPct: 0,
   ShadeResult: '', WashAppearance: '', HandFeel: '',
-  TestResult: 'Pending', TestedBy: '', ApprovedBy: '', ReportLink: '', Comments: '',
+  TestResult: 'Pending', TestedByUserId: 0, ApprovedByUserId: 0, ReportLink: '', Comments: '',
 };
 
 const InternalTestPage: React.FC = () => {
@@ -51,6 +52,7 @@ const InternalTestPage: React.FC = () => {
 
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const RESULT_OPTIONS = catalogs['TestResult']?.length ? catalogs['TestResult'] : ['Pending', 'Testing', 'Passed', 'Conditionally Passed', 'Failed'];
 
@@ -75,7 +77,7 @@ const InternalTestPage: React.FC = () => {
       TorquePct: item.torquePct, BowingPct: item.bowingPct, SkewingPct: item.skewingPct,
       ShadeResult: item.shadeResult ?? '', WashAppearance: item.washAppearance ?? '',
       HandFeel: item.handFeel ?? '', TestResult: item.testResult || 'Pending',
-      TestedBy: item.testedBy ?? '', ApprovedBy: item.approvedBy ?? '',
+      TestedByUserId: userList.find(o => o.label === item.testedBy)?.id ?? 0, ApprovedByUserId: userList.find(o => o.label === item.approvedBy)?.id ?? 0,
       ReportLink: item.reportLink ?? '', Comments: item.comments ?? '',
     });
     setFormError(''); setDialogOpen(true);
@@ -94,6 +96,8 @@ const InternalTestPage: React.FC = () => {
     try {
       const payload = {
         ...form,
+        TestedByUserId: form.TestedByUserId || null,
+        ApprovedByUserId: form.ApprovedByUserId || null,
         TestDate: form.TestDate ? new Date(form.TestDate).toISOString() : new Date().toISOString(),
       };
       if (editingId) await update(editingId, payload);
@@ -228,7 +232,7 @@ const InternalTestPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Test Date *" type="date" value={form.TestDate} onChange={e => setF('TestDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Supplier" value={form.Supplier} onChange={e => setF('Supplier', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Supplier" value={form.Supplier} disabled /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Lot Number" value={form.LotNumber} onChange={e => setF('LotNumber', e.target.value)} placeholder="LOT-MILL-001 (auto)" /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Color" value={form.Color} onChange={e => setF('Color', e.target.value)} /></Grid>
 
@@ -261,8 +265,24 @@ const InternalTestPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth size="small" label="Tested By" value={form.TestedBy} onChange={e => setF('TestedBy', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 4 }}><TextField fullWidth size="small" label="Approved By" value={form.ApprovedBy} onChange={e => setF('ApprovedBy', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Tested By</InputLabel>
+                <Select value={form.TestedByUserId || ''} label="Tested By" onChange={e => setF('TestedByUserId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Approved By</InputLabel>
+                <Select value={form.ApprovedByUserId || ''} label="Approved By" onChange={e => setF('ApprovedByUserId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+            </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>

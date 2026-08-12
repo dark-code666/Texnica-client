@@ -7,7 +7,8 @@ export interface FabricRequirement {
   customerName: string;
   style?: string;
   color?: string;
-  fabricComponent?: string;
+  componentId?: number;
+  componentCode?: string;
   fabricDescription?: string;
   composition?: string;
   gsm: number;
@@ -22,7 +23,8 @@ export interface FabricRequirement {
   netPurchaseRequirement: number;
   requiredDate: string;
   status?: string;
-  dataOwner?: string;
+  dataOwnerId?: number;
+  dataOwnerName?: string;
   remarks?: string;
   active: boolean;
   createdAt: string;
@@ -33,7 +35,7 @@ export interface CreateFabricRequirementInput {
   fgpoId: number;
   style?: string;
   color?: string;
-  fabricComponent?: string;
+  componentId?: number;
   fabricDescription?: string;
   composition?: string;
   gsm: number;
@@ -45,6 +47,6 @@ export interface CreateFabricRequirementInput {
   availableInventory: number;
   requiredDate: string;
   status?: string;
-  dataOwner?: string;
+  dataOwnerId?: number;
   remarks?: string;
 }

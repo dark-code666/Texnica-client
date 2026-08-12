@@ -38,6 +38,14 @@ import BusinessIcon from '@mui/icons-material/Business';
 import FactoryIcon2 from '@mui/icons-material/Factory';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import FiberSmartRecordIcon from '@mui/icons-material/FiberSmartRecord';
+import PaletteIcon from '@mui/icons-material/Palette';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import WidgetsIcon from '@mui/icons-material/Widgets';
+import PercentIcon from '@mui/icons-material/Percent';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { AuthContext } from '../context/AuthContext';
 
@@ -125,6 +133,22 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         { text: 'Warehouse',          icon: <WarehouseIcon fontSize="small" />,        path: '/warehouse' },
       ],
     },
+    {
+      key: 'master',
+      title: 'Master Data',
+      icon: <CategoryIcon />,
+      subItems: [
+        { text: 'Styles',       icon: <CheckroomIcon fontSize="small" />,             path: '/admin/styles' },
+        { text: 'Fabrics',      icon: <FiberSmartRecordIcon fontSize="small" />,       path: '/admin/fabrics' },
+        { text: 'Colors',       icon: <PaletteIcon fontSize="small" />,               path: '/admin/colors' },
+        { text: 'Sizes',        icon: <StraightenIcon fontSize="small" />,            path: '/admin/sizes' },
+        { text: 'Components',   icon: <WidgetsIcon fontSize="small" />,               path: '/admin/components' },
+        { text: 'Box Types',    icon: <InventoryIcon fontSize="small" />,             path: '/admin/box-types' },
+        { text: 'Style Yields', icon: <PercentIcon fontSize="small" />,               path: '/admin/style-yields' },
+        { text: 'Prices',       icon: <AttachMoneyIcon fontSize="small" />,           path: '/admin/prices' },
+        { text: 'FGPO Lines',   icon: <FormatListNumberedIcon fontSize="small" />,    path: '/admin/fgpo-lines' },
+      ],
+    },
   ];
 
   const adminSubItems: SubItem[] = [
@@ -134,6 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
     { text: 'Clients',            icon: <BusinessIcon fontSize="small" />, path: '/admin/clientes' },
     { text: 'Customers',          icon: <BusinessIcon fontSize="small" />, path: '/admin/customers' },
     { text: 'Factories',          icon: <FactoryIcon2 fontSize="small" />, path: '/admin/factories' },
+    { text: 'Suppliers',          icon: <LocalShippingIcon fontSize="small" />, path: '/admin/suppliers' },
   ];
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {

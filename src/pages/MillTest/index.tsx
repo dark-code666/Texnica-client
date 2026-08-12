@@ -18,6 +18,7 @@ import { useMillTests } from '../../hooks/millTests/useMillTests';
 import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { MillTest } from '../../types';
 
 const DEFAULT_TEST_RESULTS = ['Pending', 'Testing', 'Passed', 'Conditionally Passed', 'Failed'];
@@ -34,7 +35,7 @@ const emptyForm = {
   TorquePercentage: 0, BowingPercentage: 0, SkewingPercentage: 0,
   Colorfastness: '', WashAppearance: '', HandFeel: '',
   TestDate: new Date().toISOString().split('T')[0],
-  TestedBy: '', TestResult: 'Pending', ApprovedForExport: false,
+  TestedByUserId: 0, TestResult: 'Pending', ApprovedForExport: false,
   ReportLink: '', Comments: '',
 };
 
@@ -54,6 +55,7 @@ const MillTestPage: React.FC = () => {
 
   const { options: poList } = useFabricPOOptions();
   const { options: fgpoList } = useFgpoOptions();
+  const { options: userList } = useUserOptions();
   const { catalogs } = useCatalogs();
   const TEST_RESULTS = catalogs['TestResult']?.length ? catalogs['TestResult'] : DEFAULT_TEST_RESULTS;
 
@@ -78,7 +80,7 @@ const MillTestPage: React.FC = () => {
       Colorfastness: item.colorfastness ?? '', WashAppearance: item.washAppearance ?? '',
       HandFeel: item.handFeel ?? '',
       TestDate: item.testDate?.split('T')[0] || '',
-      TestedBy: item.testedBy ?? '', TestResult: item.testResult || 'Pending',
+      TestedByUserId: userList.find(o => o.label === item.testedBy)?.id ?? 0, TestResult: item.testResult || 'Pending',
       ApprovedForExport: item.approvedForExport,
       ReportLink: item.reportLink ?? '', Comments: item.comments ?? '',
     });
@@ -96,8 +98,12 @@ const MillTestPage: React.FC = () => {
     if (!form.FabricPOId || !form.FGPOId) { setFormError('Fabric PO and FGPO are required.'); return; }
     if (!form.LotNumber) { setFormError('Lot Number is required.'); return; }
     try {
-      if (editingId) await update(editingId, form);
-      else await create(form);
+      const payload = {
+        ...form,
+        TestedByUserId: form.TestedByUserId || null,
+      };
+      if (editingId) await update(editingId, payload);
+      else await create(payload);
       setDialogOpen(false);
     } catch (err: any) { setFormError(err.response?.data || 'Error saving.'); }
   };
@@ -223,7 +229,7 @@ const MillTestPage: React.FC = () => {
             {/* ── General Info ── */}
             <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">General Information</Typography></Divider></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField fullWidth size="small" label="Supplier" value={form.Supplier} onChange={e => setF('Supplier', e.target.value)} />
+              <TextField fullWidth size="small" label="Supplier" value={form.Supplier} disabled />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField fullWidth size="small" label="Lot Number *" value={form.LotNumber} onChange={e => setF('LotNumber', e.target.value)} required />
@@ -277,7 +283,13 @@ const MillTestPage: React.FC = () => {
               <TextField fullWidth size="small" label="Test Date *" type="date" value={form.TestDate} onChange={e => setF('TestDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <TextField fullWidth size="small" label="Tested By" value={form.TestedBy} onChange={e => setF('TestedBy', e.target.value)} />
+              <FormControl fullWidth size="small">
+                <InputLabel>Tested By</InputLabel>
+                <Select value={form.TestedByUserId || ''} label="Tested By" onChange={e => setF('TestedByUserId', Number(e.target.value))}>
+                  <MenuItem value=""><em>Select a User...</em></MenuItem>
+                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small"><InputLabel>Test Result</InputLabel>

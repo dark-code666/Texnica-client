@@ -15,6 +15,16 @@ export const useFabricPOOptions = () => {
         id: p.id ?? p.ID,
         label: p.fabricPONumber ?? p.FabricPONumber ?? '',
         sub: p.supplier ?? p.Supplier ?? '',
+        meta: {
+          fabricComponent: p.fabricComponent ?? p.FabricComponent ?? '',
+          uom: p.uom ?? p.UOM ?? '',
+          fgpos: (p.fgpos ?? p.Fgpos ?? []).map((f: any) => ({
+            fgpoId: f.fgpoId ?? f.FGPOId ?? 0,
+            fgpoNumber: f.fgpoNumber ?? f.FGPONumber ?? '',
+            style: f.style ?? f.Style ?? '',
+            color: f.color ?? f.Color ?? '',
+          })),
+        },
       })));
     } catch {
       /* mantiene opciones vacías */

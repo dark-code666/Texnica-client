@@ -13,6 +13,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { fabricRequirementsApi, fgpoApi, customersApi } from '../../utils/api';
+import { useComponentOptions } from '../../hooks/components/useComponentOptions';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 
 interface FabricRequirement {
   ID: number;
@@ -21,7 +23,8 @@ interface FabricRequirement {
   CustomerName: string;
   Style?: string;
   Color?: string;
-  FabricComponent?: string;
+  ComponentId?: number;
+  ComponentCode?: string;
   FabricDescription?: string;
   Composition?: string;
   GSM: number;
@@ -36,7 +39,8 @@ interface FabricRequirement {
   NetPurchaseRequirement: number;
   RequiredDate: string;
   Status?: string;
-  DataOwner?: string;
+  DataOwnerId?: number;
+  DataOwnerName?: string;
   Remarks?: string;
   Active: boolean;
   CreatedAt: string;
@@ -61,7 +65,7 @@ interface FabricRequirementForm {
   FGPOId: number;
   Style: string;
   Color: string;
-  FabricComponent: string;
+  ComponentId: number;
   FabricDescription: string;
   Composition: string;
   GSM: number;
@@ -73,7 +77,7 @@ interface FabricRequirementForm {
   AvailableInventory: number;
   RequiredDate: string;
   Status: string;
-  DataOwner: string;
+  DataOwnerId: number;
   Remarks: string;
 }
 
@@ -81,7 +85,7 @@ const emptyForm: FabricRequirementForm = {
   FGPOId: 0,
   Style: '',
   Color: '',
-  FabricComponent: '',
+  ComponentId: 0,
   FabricDescription: '',
   Composition: '',
   GSM: 0,
@@ -93,15 +97,11 @@ const emptyForm: FabricRequirementForm = {
   AvailableInventory: 0,
   RequiredDate: '',
   Status: '',
-  DataOwner: '',
+  DataOwnerId: 0,
   Remarks: '',
 };
 
 const uomOptions = ['Yards', 'Meters', 'Kilograms', 'Pounds', 'Rolls', 'Pieces'];
-
-const fabricComponentOptions = [
-  'Body Fabric', 'Rib', 'Shoulder Tape', 'Neck Tape', 'Pocketing', 'Other'
-];
 
 const statusOptions = ['Pending', 'Approved', 'In Progress', 'Completed', 'On Hold', 'Cancelled'];
 
@@ -113,7 +113,8 @@ const mapFabricRequirement = (raw: any): FabricRequirement => ({
   CustomerName: raw.customerName ?? raw.CustomerName ?? '',
   Style: raw.style ?? raw.Style,
   Color: raw.color ?? raw.Color,
-  FabricComponent: raw.fabricComponent ?? raw.FabricComponent,
+  ComponentId: raw.componentId ?? raw.ComponentId ?? undefined,
+  ComponentCode: raw.componentCode ?? raw.ComponentCode ?? '',
   FabricDescription: raw.fabricDescription ?? raw.FabricDescription,
   Composition: raw.composition ?? raw.Composition,
   GSM: raw.gsm ?? raw.GSM ?? 0,
@@ -128,7 +129,8 @@ const mapFabricRequirement = (raw: any): FabricRequirement => ({
   NetPurchaseRequirement: raw.netPurchaseRequirement ?? raw.NetPurchaseRequirement ?? 0,
   RequiredDate: raw.requiredDate ?? raw.RequiredDate ?? '',
   Status: raw.status ?? raw.Status,
-  DataOwner: raw.dataOwner ?? raw.DataOwner,
+  DataOwnerId: raw.dataOwnerId ?? raw.DataOwnerId ?? undefined,
+  DataOwnerName: raw.dataOwnerName ?? raw.DataOwnerName ?? '',
   Remarks: raw.remarks ?? raw.Remarks,
   Active: raw.active ?? raw.Active ?? true,
   CreatedAt: raw.createdAt ?? raw.CreatedAt ?? '',
@@ -171,6 +173,8 @@ const FabricRequirement: React.FC = () => {
   const [fgpos, setFgpos] = useState<FgpoOption[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [selectedFgpo, setSelectedFgpo] = useState<FgpoOption | null>(null);
+  const { options: componentList } = useComponentOptions();
+  const { options: userList } = useUserOptions();
 
   useEffect(() => {
     loadData();
@@ -261,7 +265,7 @@ const FabricRequirement: React.FC = () => {
       FGPOId: item.FGPOId,
       Style: item.Style || '',
       Color: item.Color || '',
-      FabricComponent: item.FabricComponent || '',
+      ComponentId: item.ComponentId || 0,
       FabricDescription: item.FabricDescription || '',
       Composition: item.Composition || '',
       GSM: item.GSM,
@@ -273,7 +277,7 @@ const FabricRequirement: React.FC = () => {
       AvailableInventory: item.AvailableInventory,
       RequiredDate: item.RequiredDate ? item.RequiredDate.slice(0, 10) : '',
       Status: item.Status || '',
-      DataOwner: item.DataOwner || '',
+      DataOwnerId: item.DataOwnerId || 0,
       Remarks: item.Remarks || '',
     });
     const fgpo = fgpos.find(f => f.ID === item.FGPOId) || null;
@@ -311,7 +315,7 @@ const FabricRequirement: React.FC = () => {
       setFormError('FGPO is required.');
       return;
     }
-    if (!form.FabricComponent.trim()) {
+    if (!form.ComponentId) {
       setFormError('Fabric Component is required.');
       return;
     }
@@ -338,6 +342,8 @@ const FabricRequirement: React.FC = () => {
 
     const payload = {
       ...form,
+      ComponentId: form.ComponentId || null,
+      DataOwnerId: form.DataOwnerId || null,
       GSM: Number(form.GSM),
       OrderQuantity: Number(form.OrderQuantity),
       ApprovedYield: Number(form.ApprovedYield),
@@ -494,7 +500,7 @@ const FabricRequirement: React.FC = () => {
               onChange={e => { setFabricComponentFilter(e.target.value); setPage(0); }}
             >
               <MenuItem value="">All</MenuItem>
-              {fabricComponentOptions.map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+              {componentList.map(c => <MenuItem key={c.id} value={c.label}>{c.label}</MenuItem>)}
             </Select>
           </FormControl>
 
@@ -554,7 +560,7 @@ const FabricRequirement: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>{item.FGPONumber}</TableCell>
                   <TableCell>{item.Style || '-'}</TableCell>
                   <TableCell>{item.Color || '-'}</TableCell>
-                  <TableCell>{item.FabricComponent || '-'}</TableCell>
+                  <TableCell>{item.ComponentCode || '-'}</TableCell>
                   <TableCell>{item.FabricDescription || '-'}</TableCell>
                   <TableCell>{item.Composition || '-'}</TableCell>
                   <TableCell align="right">{formatNumber(item.GSM)}</TableCell>
@@ -583,7 +589,7 @@ const FabricRequirement: React.FC = () => {
                       variant="outlined"
                     />
                   </TableCell>
-                  <TableCell>{item.DataOwner || '-'}</TableCell>
+                  <TableCell>{item.DataOwnerName || '-'}</TableCell>
                   <TableCell>
                     <Tooltip title="View">
                       <IconButton size="small" color="info" onClick={() => openDetailDialog(item)}>
@@ -676,12 +682,12 @@ const FabricRequirement: React.FC = () => {
               <FormControl size="small" required>
                 <InputLabel>Fabric Component *</InputLabel>
                 <Select
-                  value={form.FabricComponent}
+                  value={form.ComponentId || ''}
                   label="Fabric Component *"
-                  onChange={e => setForm({ ...form, FabricComponent: e.target.value })}
+                  onChange={e => setForm({ ...form, ComponentId: Number(e.target.value) })}
                 >
                   <MenuItem value="">Select component...</MenuItem>
-                  {fabricComponentOptions.map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+                  {componentList.map(c => <MenuItem key={c.id} value={c.id}>{c.label}{c.sub ? ` — ${c.sub}` : ''}</MenuItem>)}
                 </Select>
               </FormControl>
               <TextField
@@ -783,12 +789,17 @@ const FabricRequirement: React.FC = () => {
                   {statusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
                 </Select>
               </FormControl>
-              <TextField
-                label="Data Owner"
-                size="small"
-                value={form.DataOwner}
-                onChange={e => setForm({ ...form, DataOwner: e.target.value })}
-              />
+              <FormControl size="small">
+                <InputLabel>Data Owner</InputLabel>
+                <Select
+                  value={form.DataOwnerId || ''}
+                  label="Data Owner"
+                  onChange={e => setForm({ ...form, DataOwnerId: Number(e.target.value) })}
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
+                </Select>
+              </FormControl>
               <TextField
                 label="Remarks"
                 size="small"
@@ -841,7 +852,7 @@ const FabricRequirement: React.FC = () => {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" color="text.secondary">Fabric Component</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.FabricComponent || '-'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.ComponentCode || '-'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" color="text.secondary">Fabric Description</Typography>
@@ -901,7 +912,7 @@ const FabricRequirement: React.FC = () => {
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" color="text.secondary">Data Owner</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.DataOwner || '-'}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.DataOwnerName || '-'}</Typography>
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" color="text.secondary">Created At</Typography>

@@ -13,14 +13,19 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { fabricPOsApi, fgpoApi } from '../../utils/api';
+import { useSupplierOptions } from '../../hooks/suppliers/useSupplierOptions';
+import { useComponentOptions } from '../../hooks/components/useComponentOptions';
+import { useUserOptions } from '../../hooks/users/useUserOptions';
 
 interface FabricPO {
   ID: number;
   FabricPONumber: string;
   Fgpos: FabricPOFgpo[];
-  Supplier?: string;
+  SupplierId?: number;
+  SupplierName?: string;
   FabricMill?: string;
-  FabricComponent?: string;
+  ComponentId?: number;
+  ComponentCode?: string;
   OrderedQuantity: number;
   UOM?: string;
   UnitPrice: number;
@@ -30,8 +35,10 @@ interface FabricPO {
   PlannedExport?: string;
   PlannedArrival?: string;
   POStatus?: string;
-  PurchaseOwner?: string;
-  ApprovedBy?: string;
+  PurchaseOwnerUserId?: number;
+  PurchaseOwnerName?: string;
+  ApprovedByUserId?: number;
+  ApprovedByName?: string;
   LastUpdated?: string;
   Remarks?: string;
   Active: boolean;
@@ -67,9 +74,9 @@ interface FgpoItem {
 interface FabricPOForm {
   FabricPONumber: string;
   FgpoItems: FgpoItem[];
-  Supplier: string;
+  SupplierId: number;
   FabricMill: string;
-  FabricComponent: string;
+  ComponentId: number;
   OrderedQuantity: number;
   UOM: string;
   UnitPrice: number;
@@ -78,20 +85,19 @@ interface FabricPOForm {
   PlannedExport: string;
   PlannedArrival: string;
   POStatus: string;
-  PurchaseOwner: string;
-  ApprovedBy: string;
+  PurchaseOwnerUserId: number;
+  ApprovedByUserId: number;
   Remarks: string;
 }
 
 const emptyForm: FabricPOForm = {
-  FabricPONumber: '', FgpoItems: [], Supplier: '', FabricMill: '', FabricComponent: '',
+  FabricPONumber: '', FgpoItems: [], SupplierId: 0, FabricMill: '', ComponentId: 0,
   OrderedQuantity: 0, UOM: '', UnitPrice: 0, OrderDate: '',
   RequiredCompletion: '', PlannedExport: '', PlannedArrival: '', POStatus: '',
-  PurchaseOwner: '', ApprovedBy: '', Remarks: '',
+  PurchaseOwnerUserId: 0, ApprovedByUserId: 0, Remarks: '',
 };
 
 const uomOptions = ['Yards', 'Meters', 'Kilograms', 'Pounds', 'Rolls', 'Pieces'];
-const fabricComponentOptions = ['Body Fabric', 'Rib', 'Shoulder Tape', 'Neck Tape', 'Pocketing', 'Other'];
 const poStatusOptions = [
   'Not Started', 'Pending', 'In Progress', 'Partially Completed', 'Completed',
   'Approved', 'Conditionally Approved', 'Rejected', 'On Hold', 'Closed', 'Cancelled'
@@ -108,9 +114,11 @@ const mapFabricPO = (raw: any): FabricPO => ({
     Color: f.color ?? f.Color,
     AllocatedQuantity: f.allocatedQuantity ?? f.AllocatedQuantity ?? 0,
   })),
-  Supplier: raw.supplier ?? raw.Supplier,
+  SupplierId: raw.supplierId ?? raw.SupplierId ?? undefined,
+  SupplierName: raw.supplierName ?? raw.SupplierName ?? raw.supplier ?? raw.Supplier,
   FabricMill: raw.fabricMill ?? raw.FabricMill,
-  FabricComponent: raw.fabricComponent ?? raw.FabricComponent,
+  ComponentId: raw.componentId ?? raw.ComponentId ?? undefined,
+  ComponentCode: raw.componentCode ?? raw.ComponentCode ?? raw.fabricComponent ?? raw.FabricComponent,
   OrderedQuantity: raw.orderedQuantity ?? raw.OrderedQuantity ?? 0,
   UOM: raw.uom ?? raw.UOM,
   UnitPrice: raw.unitPrice ?? raw.UnitPrice ?? 0,
@@ -120,8 +128,10 @@ const mapFabricPO = (raw: any): FabricPO => ({
   PlannedExport: raw.plannedExport ?? raw.PlannedExport,
   PlannedArrival: raw.plannedArrival ?? raw.PlannedArrival,
   POStatus: raw.poStatus ?? raw.POStatus,
-  PurchaseOwner: raw.purchaseOwner ?? raw.PurchaseOwner,
-  ApprovedBy: raw.approvedBy ?? raw.ApprovedBy,
+  PurchaseOwnerUserId: raw.purchaseOwnerUserId ?? raw.PurchaseOwnerUserId ?? undefined,
+  PurchaseOwnerName: raw.purchaseOwnerName ?? raw.PurchaseOwnerName ?? raw.purchaseOwner ?? raw.PurchaseOwner,
+  ApprovedByUserId: raw.approvedByUserId ?? raw.ApprovedByUserId ?? undefined,
+  ApprovedByName: raw.approvedByName ?? raw.ApprovedByName ?? raw.approvedBy ?? raw.ApprovedBy,
   LastUpdated: raw.lastUpdated ?? raw.LastUpdated,
   Remarks: raw.remarks ?? raw.Remarks,
   Active: raw.active ?? raw.Active ?? true,
@@ -153,6 +163,9 @@ const FabricPO: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [detailItem, setDetailItem] = useState<FabricPO | null>(null);
   const [fgpos, setFgpos] = useState<FgpoOption[]>([]);
+  const { options: supplierList } = useSupplierOptions();
+  const { options: componentList } = useComponentOptions();
+  const { options: userList } = useUserOptions();
 
   useEffect(() => {
     loadData();
@@ -220,16 +233,16 @@ const FabricPO: React.FC = () => {
         Color: f.Color || '',
         AllocatedQuantity: f.AllocatedQuantity,
       })),
-      Supplier: item.Supplier || '', FabricMill: item.FabricMill || '',
-      FabricComponent: item.FabricComponent || '',
+      SupplierId: item.SupplierId || 0, FabricMill: item.FabricMill || '',
+      ComponentId: item.ComponentId || 0,
       OrderedQuantity: item.OrderedQuantity,
       UOM: item.UOM || '', UnitPrice: item.UnitPrice,
       OrderDate: item.OrderDate ? item.OrderDate.slice(0, 10) : '',
       RequiredCompletion: item.RequiredCompletion ? item.RequiredCompletion.slice(0, 10) : '',
       PlannedExport: item.PlannedExport ? item.PlannedExport.slice(0, 10) : '',
       PlannedArrival: item.PlannedArrival ? item.PlannedArrival.slice(0, 10) : '',
-      POStatus: item.POStatus || '', PurchaseOwner: item.PurchaseOwner || '',
-      ApprovedBy: item.ApprovedBy || '', Remarks: item.Remarks || '',
+      POStatus: item.POStatus || '', PurchaseOwnerUserId: item.PurchaseOwnerUserId || 0,
+      ApprovedByUserId: item.ApprovedByUserId || 0, Remarks: item.Remarks || '',
     });
     setFormError('');
     setDialogOpen(true);
@@ -263,7 +276,7 @@ const FabricPO: React.FC = () => {
     setFormError('');
     if (!form.FabricPONumber.trim()) { setFormError('Fabric PO Number is required.'); return; }
     if (form.FgpoItems.length === 0) { setFormError('At least one FGPO must be selected.'); return; }
-    if (!form.FabricComponent.trim()) { setFormError('Fabric Component is required.'); return; }
+    if (!form.ComponentId) { setFormError('Fabric Component is required.'); return; }
     if (!form.UOM.trim()) { setFormError('UOM is required.'); return; }
     if (form.OrderedQuantity <= 0) { setFormError('Ordered Quantity must be greater than 0.'); return; }
     if (form.UnitPrice <= 0) { setFormError('Unit Price must be greater than 0.'); return; }
@@ -290,9 +303,9 @@ const FabricPO: React.FC = () => {
         Color: i.Color || null,
         AllocatedQuantity: Number(i.AllocatedQuantity),
       })),
-      Supplier: form.Supplier || null,
+      SupplierId: form.SupplierId || null,
       FabricMill: form.FabricMill || null,
-      FabricComponent: form.FabricComponent,
+      ComponentId: form.ComponentId || null,
       OrderedQuantity: Number(form.OrderedQuantity),
       UOM: form.UOM,
       UnitPrice: Number(form.UnitPrice),
@@ -301,8 +314,8 @@ const FabricPO: React.FC = () => {
       PlannedExport: form.PlannedExport || null,
       PlannedArrival: form.PlannedArrival || null,
       POStatus: form.POStatus || null,
-      PurchaseOwner: form.PurchaseOwner || null,
-      ApprovedBy: form.ApprovedBy || null,
+      PurchaseOwnerUserId: form.PurchaseOwnerUserId || null,
+      ApprovedByUserId: form.ApprovedByUserId || null,
       Remarks: form.Remarks || null,
     };
 
@@ -415,7 +428,7 @@ const FabricPO: React.FC = () => {
             <InputLabel>Fabric Component</InputLabel>
             <Select value={fabricComponentFilter} label="Fabric Component" onChange={e => { setFabricComponentFilter(e.target.value); setPage(0); }}>
               <MenuItem value="">All</MenuItem>
-              {fabricComponentOptions.map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+              {componentList.map(c => <MenuItem key={c.id} value={c.label}>{c.label}</MenuItem>)}
             </Select>
           </FormControl>
 
@@ -459,9 +472,9 @@ const FabricPO: React.FC = () => {
                   <TableCell>{item.ID}</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>{item.FabricPONumber}</TableCell>
                   <TableCell>{item.Fgpos.length > 0 ? item.Fgpos.map(f => f.FGPONumber).join(', ') : '-'}</TableCell>
-                  <TableCell>{item.Supplier || '-'}</TableCell>
+                  <TableCell>{item.SupplierName || '-'}</TableCell>
                   <TableCell>{item.FabricMill || '-'}</TableCell>
-                  <TableCell>{item.FabricComponent || '-'}</TableCell>
+                  <TableCell>{item.ComponentCode || '-'}</TableCell>
                   <TableCell align="right">{formatNumber(item.OrderedQuantity)}</TableCell>
                   <TableCell>{item.UOM || '-'}</TableCell>
                   <TableCell align="right">{formatNumber(item.UnitPrice)}</TableCell>
@@ -504,12 +517,18 @@ const FabricPO: React.FC = () => {
               <TextField label="Fabric PO Number *" size="small" required value={form.FabricPONumber} onChange={e => setForm({ ...form, FabricPONumber: e.target.value })} />
               <FormControl size="small" required>
                 <InputLabel>Fabric Component *</InputLabel>
-                <Select value={form.FabricComponent} label="Fabric Component *" onChange={e => setForm({ ...form, FabricComponent: e.target.value })}>
+                <Select value={form.ComponentId || ''} label="Fabric Component *" onChange={e => setForm({ ...form, ComponentId: Number(e.target.value) })}>
                   <MenuItem value="">Select component...</MenuItem>
-                  {fabricComponentOptions.map(f => <MenuItem key={f} value={f}>{f}</MenuItem>)}
+                  {componentList.map(c => <MenuItem key={c.id} value={c.id}>{c.label}{c.sub ? ` — ${c.sub}` : ''}</MenuItem>)}
                 </Select>
               </FormControl>
-              <TextField label="Supplier" size="small" value={form.Supplier} onChange={e => setForm({ ...form, Supplier: e.target.value })} />
+              <FormControl size="small" required>
+                <InputLabel>Supplier</InputLabel>
+                <Select value={form.SupplierId || ''} label="Supplier" onChange={e => setForm({ ...form, SupplierId: Number(e.target.value) })}>
+                  <MenuItem value="">Select supplier...</MenuItem>
+                  {supplierList.map(s => <MenuItem key={s.id} value={s.id}>{s.label}</MenuItem>)}
+                </Select>
+              </FormControl>
               <TextField label="Fabric Mill" size="small" value={form.FabricMill} onChange={e => setForm({ ...form, FabricMill: e.target.value })} />
               <TextField label="Ordered Quantity *" size="small" type="number" required value={form.OrderedQuantity} onChange={e => setForm({ ...form, OrderedQuantity: Number(e.target.value) })} />
               <FormControl size="small" required>
@@ -531,8 +550,20 @@ const FabricPO: React.FC = () => {
                   {poStatusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
                 </Select>
               </FormControl>
-              <TextField label="Purchase Owner" size="small" value={form.PurchaseOwner} onChange={e => setForm({ ...form, PurchaseOwner: e.target.value })} />
-              <TextField label="Approved By" size="small" value={form.ApprovedBy} onChange={e => setForm({ ...form, ApprovedBy: e.target.value })} />
+              <FormControl size="small">
+                <InputLabel>Purchase Owner</InputLabel>
+                <Select value={form.PurchaseOwnerUserId || ''} label="Purchase Owner" onChange={e => setForm({ ...form, PurchaseOwnerUserId: Number(e.target.value) })}>
+                  <MenuItem value="">Select a User...</MenuItem>
+                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
+                </Select>
+              </FormControl>
+              <FormControl size="small">
+                <InputLabel>Approved By</InputLabel>
+                <Select value={form.ApprovedByUserId || ''} label="Approved By" onChange={e => setForm({ ...form, ApprovedByUserId: Number(e.target.value) })}>
+                  <MenuItem value="">Select a User...</MenuItem>
+                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
+                </Select>
+              </FormControl>
               <TextField label="Remarks" size="small" multiline rows={2} value={form.Remarks} onChange={e => setForm({ ...form, Remarks: e.target.value })} sx={{ gridColumn: { sm: 'span 2' } }} />
             </Box>
 
@@ -611,7 +642,7 @@ const FabricPO: React.FC = () => {
                   </Grid>
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="caption" color="text.secondary">Supplier</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.Supplier || '-'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.SupplierName || '-'}</Typography>
                   </Grid>
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="caption" color="text.secondary">Fabric Mill</Typography>
@@ -619,7 +650,7 @@ const FabricPO: React.FC = () => {
                   </Grid>
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="caption" color="text.secondary">Fabric Component</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.FabricComponent || '-'}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{detailItem.ComponentCode || '-'}</Typography>
                   </Grid>
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="caption" color="text.secondary">Ordered Quantity</Typography>
