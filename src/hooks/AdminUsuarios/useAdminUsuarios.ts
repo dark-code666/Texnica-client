@@ -67,7 +67,7 @@ export const useAdminUsuarios = () => {
     }
 
     try {
-      const res = await authApi.register(newUser.name, newUser.email, DEFAULT_PASSWORD);
+      const res = await authApi.createUser(newUser.name, newUser.email);
       const createdUser = res.data.user;
 
       if (createdUser?.id && newUser.roleId) {

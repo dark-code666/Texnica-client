@@ -215,10 +215,10 @@ const InternalTestPage: React.FC = () => {
                   const v = Number(e.target.value);
                   const po = poList.find((p: any) => (p.id ?? p.ID) === v);
                   setF('FabricPOId', v);
-                  setF('Supplier', po?.supplier || form.Supplier);
+                  setF('Supplier', (po as any)?.sub || form.Supplier);
                 }}>
                   <MenuItem value=""><em>Select a Fabric PO...</em></MenuItem>
-                  {poList.map((p: any) => <MenuItem key={p.id ?? p.ID} value={p.id ?? p.ID}>{p.label} {p.supplier ? `— ${p.supplier}` : ''}</MenuItem>)}
+                  {poList.map((p: any) => <MenuItem key={p.id ?? p.ID} value={p.id ?? p.ID}>{p.label}{(p as any)?.sub ? ` — ${(p as any).sub}` : ''}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>

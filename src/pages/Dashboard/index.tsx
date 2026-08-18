@@ -1,262 +1,306 @@
-import React, { useState, useContext } from 'react';
-import { DataContext } from '../../context/DataContext';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Tabs, Tab, Chip, MenuItem, Select, FormControl, InputLabel,
+  TableHead, TableRow, Tabs, Tab, Chip, CircularProgress, Alert
 } from '@mui/material';
+import {
+  fgpoApi, ppSamplesApi, topSamplesApi, productionReadinessApi, cuttingReleasesApi,
+  cuttingControlsApi, sewingProductionsApi, inlineQualitiesApi, aqlInspectionsApi,
+  packingControlsApi, finishedGoodsApi, shipmentControlsApi, fabricRequirementsApi,
+  trimsControlsApi, fabricPOsApi, millProductionsApi, millTestsApi, fabricShipmentsApi,
+  fabricReceivingsApi, fourPointApi, internalTestsApi, shadeMatchesApi,
+  fabricInventoriesApi, fabricReservationsApi,
+} from '../../utils/api';
 
-const balanceCell = (value: number, positive = false) => ({
-  fontWeight: 'bold',
-  color: value === 0 ? 'text.secondary' : (positive ? (value > 0 ? 'success.main' : 'error.main') : (value < 0 ? 'error.main' : 'success.main')),
-});
+// ── helpers ────────────────────────────────────────────────
+const pick = (o: any, camel: string, pascal: string) => o?.[camel] ?? o?.[pascal];
+const num = (v: any) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+const fgpoIdOf = (o: any) => pick(o, 'fgpoId', 'FGPOId') ?? 0;
+const fmtNum = (v: number) => Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 });
 
-const hd = (label: string, bg: string, color = 'primary.main') => (
-  <TableCell align="center"
-    sx={{ bgcolor: bg, fontWeight: 'bold', color, border: '1px solid #e0e0e0', whiteSpace: 'nowrap' }}>
-    {label}
-  </TableCell>
-);
+const latest = (rows: any[], fgpoId: number) => {
+  const rs = rows.filter(r => fgpoIdOf(r) === fgpoId);
+  if (rs.length === 0) return null;
+  return rs.reduce((a, b) => {
+    const at = pick(a, 'createdAt', 'CreatedAt') ?? '';
+    const bt = pick(b, 'createdAt', 'CreatedAt') ?? '';
+    return at >= bt ? a : b;
+  });
+};
+const sumBy = (rows: any[], fgpoId: number, camel: string, pascal: string) =>
+  rows.filter(r => fgpoIdOf(r) === fgpoId).reduce((s, r) => s + num(pick(r, camel, pascal)), 0);
+const sumAll = (rows: any[], camel: string, pascal: string) =>
+  rows.reduce((s, r) => s + num(pick(r, camel, pascal)), 0);
 
+const statusChip = (s?: string) => {
+  const m: Record<string, any> = {
+    Approved: 'success', Passed: 'success', Ready: 'success', Accepted: 'success',
+    Rejected: 'error', Failed: 'error', Blocked: 'error',
+    'In Progress': 'info', Testing: 'info', 'In Transit': 'info', 'Partially Shipped': 'info',
+    Pending: 'warning', 'On Hold': 'warning', 'Not Ready': 'warning', 'Ready with Conditions': 'warning',
+  };
+  return m[s ?? ''] ?? 'default';
+};
+
+const riskOf = (f: any, lateBy: number) => {
+  const pending = num(pick(f, 'pendingProduction', 'PendingProduction'));
+  if (lateBy > 0) return 'High';
+  if (pending > 0) return 'Medium';
+  const variance = num(pick(f, 'shipmentVariance', 'ShipmentVariance'));
+  return variance < 0 ? 'Medium' : 'Low';
+};
+
+// ── componente ─────────────────────────────────────────────
 const Dashboard: React.FC = () => {
-  const { purchaseOrders, fabricData } = useContext(DataContext);
-  const [tab, setTab] = useState<number>(0);
-  const [selectedPO, setSelectedPO] = useState<string | 'ALL'>('ALL');
+  const [tab, setTab] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const wipRows = purchaseOrders
-    .filter(po => selectedPO === 'ALL' || po.id === selectedPO)
-    .flatMap(po =>
-      (po.production || []).map((row, idx) => ({
-        ...row,
-        style:  po.items[0]?.style || '',
-        color:  po.items[0]?.color || '',
-        po:     po.id,
-        client: po.client,
-        first:  idx === 0,
-      }))
-    );
+  const [data, setData] = useState<any>({});
 
-  const wipTotals = wipRows.reduce(
-    (acc, r) => ({
-      orderQty:     acc.orderQty     + r.orderQty,
-      cutTotal:     acc.cutTotal     + r.cutTotal,
-      sewTotal:     acc.sewTotal     + r.sewTotal,
-      shippedTotal: acc.shippedTotal + r.shippedTotal,
-    }),
-    { orderQty: 0, cutTotal: 0, sewTotal: 0, shippedTotal: 0 }
-  );
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true); setError('');
+      try {
+        const names = {
+          fgpos: fgpoApi, pp: ppSamplesApi, top: topSamplesApi, prr: productionReadinessApi,
+          cutRel: cuttingReleasesApi, cutCtrl: cuttingControlsApi, sew: sewingProductionsApi,
+          inline: inlineQualitiesApi, aql: aqlInspectionsApi, pack: packingControlsApi,
+          fg: finishedGoodsApi, ship: shipmentControlsApi, fabReq: fabricRequirementsApi,
+          trims: trimsControlsApi, fabPO: fabricPOsApi, millProd: millProductionsApi,
+          millTest: millTestsApi, fabShip: fabricShipmentsApi, fabRec: fabricReceivingsApi,
+          four: fourPointApi, intTest: internalTestsApi, shade: shadeMatchesApi,
+          fabInv: fabricInventoriesApi, fabRes: fabricReservationsApi,
+        };
+        // Normaliza la respuesta: array directo, objeto paginado {items} o []
+        const toArray = (d: any) => (Array.isArray(d) ? d : (d?.items ?? []));
+        // allSettled: si un endpoint falla, el resto sigue cargando (ese módulo queda vacío)
+        const settled = await Promise.allSettled(
+          Object.values(names).map(a => a.getAll().then(r => toArray(r.data)))
+        );
+        const entries = settled.map(s => (s.status === 'fulfilled' ? s.value : []));
+        const obj: any = {};
+        Object.keys(names).forEach((k, i) => { obj[k] = entries[i]; });
+        setData(obj);
+      } catch (err: any) { setError(err?.response?.data?.message || 'Failed to load dashboard data.'); }
+      finally { setLoading(false); }
+    };
+    load();
+  }, []);
 
-  const fabricRows = fabricData.filter(r => selectedPO === 'ALL' || r.po === selectedPO);
+  if (loading) return <Box sx={{ textAlign: 'center', py: 8 }}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error">{error}</Alert>;
 
-  const fabricGrouped = fabricRows.reduce((acc: Record<string, any[]>, row) => {
-    if (!acc[row.po]) acc[row.po] = [];
-    acc[row.po].push(row);
-    return acc;
-  }, {});
+  const fgpos = data.fgpos.filter((f: any) => pick(f, 'active', 'Active') !== false);
+
+  // ---- MASTER DASHBOARD ----
+  const totalOrder = sumAll(fgpos, 'orderQuantity', 'OrderQuantity');
+  const totalCut = sumAll(data.cutCtrl, 'goodCut', 'GoodCut');
+  const totalSew = sumAll(data.sew, 'dailyOutput', 'DailyOutput');
+  const totalPacked = sumAll(data.pack, 'packedQty', 'PackedQty');
+  const totalInTransit = sumAll(data.ship, 'inTransitQty', 'InTransitQty');
+  const totalReceived = sumAll(data.ship, 'customerReceivedQty', 'CustomerReceivedQty');
+
+  const masterCards = [
+    { label: 'Open FGPO', value: fgpos.length, color: 'primary.main' },
+    { label: 'Order Quantity', value: totalOrder, color: 'primary.main' },
+    { label: 'Cut Quantity', value: totalCut, color: 'success.main' },
+    { label: 'Sewing Output', value: totalSew, color: 'info.main' },
+    { label: 'Packed Quantity', value: totalPacked, color: 'warning.main' },
+    { label: 'In Transit', value: totalInTransit, color: 'secondary.main' },
+    { label: 'Customer Received', value: totalReceived, color: 'success.main' },
+  ];
+
+  const masterRows = fgpos.map((f: any) => {
+    const fid = pick(f, 'id', 'ID') ?? fgpoIdOf(f);
+    const fg = data.fg.filter((x: any) => fgpoIdOf(x) === fid);
+    const sh = data.ship.filter((x: any) => fgpoIdOf(x) === fid);
+    const shipDate = sh.map((s: any) => pick(s, 'etd', 'ETD') ?? '').filter(Boolean).sort().pop() ?? '';
+    const late = shipDate ? (new Date(shipDate).getTime() - Date.now()) / 86400000 : 999;
+    const aql = latest(data.aql.filter((x: any) => (pick(x, 'inspectionType', 'InspectionType') ?? '') === 'Final'), fid);
+    return {
+      f: fid,
+      fgpo: pick(f, 'fgpoNumber', 'FGPONumber') ?? '',
+      style: pick(f, 'style', 'Style') ?? '',
+      color: pick(f, 'color', 'Color') ?? '',
+      orderQty: num(pick(f, 'orderQuantity', 'OrderQuantity')),
+      fabricStatus: latest(data.fabReq, fid) ? (pick(latest(data.fabReq, fid), 'status', 'Status') ?? '') : '',
+      trimsStatus: latest(data.trims, fid) ? (pick(latest(data.trims, fid), 'approvalStatus', 'ApprovalStatus') ?? '') : '',
+      ppSample: latest(data.pp, fid) ? (pick(latest(data.pp, fid), 'status', 'Status') ?? '') : '',
+      prr: latest(data.prr, fid) ? (pick(latest(data.prr, fid), 'overallResult', 'OverallResult') ?? '') : '',
+      cutRelease: latest(data.cutRel, fid) ? (pick(latest(data.cutRel, fid), 'releaseStatus', 'ReleaseStatus') ?? '') : '',
+      cutQty: sumBy(data.cutCtrl, fid, 'goodCut', 'GoodCut'),
+      topSample: latest(data.top, fid) ? (pick(latest(data.top, fid), 'status', 'Status') ?? '') : '',
+      sewQty: sumBy(data.sew, fid, 'dailyOutput', 'DailyOutput'),
+      inlineQc: latest(data.inline, fid) ? (pick(latest(data.inline, fid), 'result', 'Result') ?? '') : '',
+      finalQc: aql ? (pick(aql, 'result', 'Result') ?? '') : '',
+      packedQty: sumBy(data.pack, fid, 'packedQty', 'PackedQty'),
+      readyToShip: fg.reduce((s: number, g: any) => s + num(pick(g, 'readyToShipQty', 'ReadyToShipQty')), 0),
+      inTransit: sh.reduce((s: number, g: any) => s + num(pick(g, 'inTransitQty', 'InTransitQty')), 0),
+      receivedQty: sh.reduce((s: number, g: any) => s + num(pick(g, 'customerReceivedQty', 'CustomerReceivedQty')), 0),
+      shipVariance: num(pick(f, 'shipmentVariance', 'ShipmentVariance')),
+      shipDate,
+      risk: riskOf(f, late),
+      updated: pick(f, 'updatedAt', 'UpdatedAt') ?? pick(f, 'createdAt', 'CreatedAt') ?? '',
+    };
+  });
+
+  // ---- FABRIC DASHBOARD ----
+  const totalFabInTransit = sumAll(data.fabShip, 'inTransitQuantity', 'InTransitQuantity');
+  const totalFabReceived = sumAll(data.fabRec, 'actualReceivedQty', 'ActualReceivedQty');
+  const totalFabApproved = sumAll(data.fabInv, 'approvedQuantity', 'ApprovedQuantity');
+  const totalShortage = sumAll(data.fabInv, 'shortageQuantity', 'ShortageQuantity');
+
+  const fabricCards = [
+    { label: 'Total FGPO', value: fgpos.length, color: 'primary.main' },
+    { label: 'Total Order Qty', value: totalOrder, color: 'primary.main' },
+    { label: 'Fabric In Transit', value: totalFabInTransit, color: 'info.main' },
+    { label: 'Fabric Received', value: totalFabReceived, color: 'success.main' },
+    { label: 'Fabric Approved', value: totalFabApproved, color: 'success.main' },
+    { label: 'Open Shortage', value: totalShortage, color: 'error.main' },
+  ];
+
+  const fabricRows = fgpos.map((f: any) => {
+    const fid = pick(f, 'id', 'ID') ?? fgpoIdOf(f);
+    const allocated = data.fabPO
+      .flatMap((p: any) => (pick(p, 'fgpos', 'Fgpos') ?? []).map((x: any) => ({ ...x, po: p })))
+      .filter((x: any) => fgpoIdOf(x) === fid)
+      .reduce((s: number, x: any) => s + num(pick(x, 'allocatedQuantity', 'AllocatedQuantity')), 0);
+    return {
+      f: fid,
+      customer: pick(f, 'customerName', 'CustomerName') ?? '',
+      fgpo: pick(f, 'fgpoNumber', 'FGPONumber') ?? '',
+      status: pick(f, 'status', 'Status') ?? '',
+      style: pick(f, 'style', 'Style') ?? '',
+      color: pick(f, 'color', 'Color') ?? '',
+      orderQty: num(pick(f, 'orderQuantity', 'OrderQuantity')),
+      shipVariance: num(pick(f, 'shipmentVariance', 'ShipmentVariance')),
+      fabRequired: sumBy(data.fabReq, fid, 'netPurchaseRequirement', 'NetPurchaseRequirement'),
+      fabOrdered: allocated,
+      millProduced: sumBy(data.millProd, fid, 'producedQuantity', 'ProducedQuantity'),
+      millTest: latest(data.millTest, fid) ? (pick(latest(data.millTest, fid), 'testResult', 'TestResult') ?? '') : '',
+      fabExported: sumBy(data.fabShip, fid, 'shippedQuantity', 'ShippedQuantity'),
+      fabInTransit: sumBy(data.fabShip, fid, 'inTransitQuantity', 'InTransitQuantity'),
+      fabReceived: sumBy(data.fabRec, fid, 'actualReceivedQty', 'ActualReceivedQty'),
+      recVariance: sumBy(data.fabRec, fid, 'receivingVariance', 'ReceivingVariance'),
+      fourPoint: latest(data.four, fid) ? (pick(latest(data.four, fid), 'result', 'Result') ?? '') : '',
+      intTest: latest(data.intTest, fid) ? (pick(latest(data.intTest, fid), 'testResult', 'TestResult') ?? '') : '',
+      shade: latest(data.shade, fid) ? (pick(latest(data.shade, fid), 'overallResult', 'OverallResult') ?? '') : '',
+      fabApproved: sumBy(data.fabInv, fid, 'approvedQuantity', 'ApprovedQuantity'),
+      reserved: sumBy(data.fabRes, fid, 'reservedQuantity', 'ReservedQuantity'),
+      issued: sumBy(data.fabInv, fid, 'issuedQuantity', 'IssuedQuantity'),
+      available: sumBy(data.fabInv, fid, 'availableQuantity', 'AvailableQuantity'),
+      shortage: sumBy(data.fabInv, fid, 'shortageQuantity', 'ShortageQuantity'),
+    };
+  });
+
+  const hd = (label: string) => <TableCell key={label} sx={{ fontWeight: 700, whiteSpace: 'nowrap', bgcolor: 'grey.100' }}>{label}</TableCell>;
+
+  const masterHeaders = ['FGPO', 'Style', 'Color', 'Order Qty', 'Fabric', 'Trims', 'PP Sample', 'PRR', 'Cut Release', 'Cut Qty', 'TOP Sample', 'Sewing Qty', 'Inline QC', 'Final QC', 'Packed', 'Ready', 'In Transit', 'Received', 'Ship Var', 'Ship Date', 'Risk', 'Updated'];
+
+  const fabricHeaders = ['Customer', 'FGPO', 'Status', 'Style', 'Color', 'Order Qty', 'Ship Var', 'Fabric Req.', 'Fabric Ord.', 'Mill Prod.', 'Mill Test', 'Exported', 'In Transit', 'Received', 'Rec Var', 'Four-Point', 'Int. Test', 'Shade', 'Approved', 'Reserved', 'Issued', 'Available', 'Shortage'];
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-        General Dashboard
-      </Typography>
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          {tab === 0 ? 'TEXNICA PRODUCTION CONTROL SYSTEM - MASTER DASHBOARD' : 'TEXNICA TPCS 1.0 - FGPO & FABRIC CONTROL DASHBOARD'}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Visibilidad de órdenes de cliente desde desarrollo de material hasta embarque. Resumen automático por FGPO.
+        </Typography>
+      </Box>
 
       <Paper elevation={3} sx={{ overflow: 'hidden', borderTop: 4, borderColor: 'primary.main' }}>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', px: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', px: 2 }}>
           <Tabs value={tab} onChange={(_, v) => setTab(v as number)} indicatorColor="primary" textColor="primary">
-            <Tab label="WIP Tracking (Orders)" sx={{ fontWeight: 'bold' }} />
-            <Tab label="Fabric Control (Raw Material)" sx={{ fontWeight: 'bold' }} />
+            <Tab label="Master Dashboard" sx={{ fontWeight: 'bold' }} />
+            <Tab label="Fabric Dashboard" sx={{ fontWeight: 'bold' }} />
           </Tabs>
-
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Filter by PO</InputLabel>
-            <Select
-              label="Filter by PO"
-              value={selectedPO}
-              onChange={e => setSelectedPO(e.target.value as string | 'ALL')}
-            >
-              <MenuItem value="ALL">All POs</MenuItem>
-              {purchaseOrders.map(po => (
-                <MenuItem key={po.id} value={po.id}>
-                  {po.id} — {po.client}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
         </Box>
 
-        {tab === 0 && (
-          <Box>
-              <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ color: 'primary.main' }}>Order Tracking (WIP)</Typography>
-              <Chip label={`${purchaseOrders.filter(p => selectedPO === 'ALL' || p.id === selectedPO).length} PO(s)`} size="small" color="primary" />
-            </Box>
+        {/* KPI cards */}
+        <Box sx={{ display: 'flex', gap: 2, p: 2, flexWrap: 'wrap' }}>
+          {(tab === 0 ? masterCards : fabricCards).map(c => (
+            <Paper key={c.label} elevation={1} sx={{ p: 2, minWidth: 150, flex: 1, borderTop: 4, borderColor: c.color }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{c.label}</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: c.color }}>{fmtNum(c.value)}</Typography>
+            </Paper>
+          ))}
+        </Box>
 
-            <TableContainer sx={{ maxHeight: 'calc(100vh - 280px)' }}>
-              <Table stickyHeader size="small" sx={{ '& th, & td': { border: '1px solid #e0e0e0' } }}>
-                <TableHead>
-                  <TableRow>
-                    {hd('ORDER DETAILS',       '#dbeafe')} {hd('', '#dbeafe')} {hd('', '#dbeafe')} {hd('', '#dbeafe')} {hd('', '#dbeafe')}
-                    {hd('CUTTING DETAILS',     '#f3f4f6', 'text.primary')} {hd('', '#f3f4f6', 'text.primary')}
-                    {hd('INGRESO A COSTURA',   '#fff3cd', '#856404')}      {hd('', '#fff3cd', '#856404')}
-                    {hd('ENVIADO AL CLIENTE',  '#d4edda', '#155724')}      {hd('', '#d4edda', '#155724')}
+        {/* Tables */}
+        <TableContainer sx={{ maxHeight: 'calc(100vh - 320px)' }}>
+          <Table stickyHeader size="small" sx={{ '& th, & td': { border: '1px solid #e0e0e0' } }}>
+            <TableHead>
+              <TableRow>
+                {(tab === 0 ? masterHeaders : fabricHeaders).map(hd)}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tab === 0 ? (
+                masterRows.length === 0 ? (
+                  <TableRow><TableCell colSpan={masterHeaders.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>No FGPO data.</TableCell></TableRow>
+                ) : masterRows.map((r: any) => (
+                  <TableRow key={r.f} hover>
+                    <TableCell sx={{ fontWeight: 600 }}>{r.fgpo}</TableCell>
+                    <TableCell>{r.style || '-'}</TableCell>
+                    <TableCell>{r.color || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.orderQty)}</TableCell>
+                    <TableCell align="center">{r.fabricStatus ? <Chip label={r.fabricStatus} size="small" color={statusChip(r.fabricStatus)} variant="outlined" /> : '-'}</TableCell>
+                    <TableCell align="center">{r.trimsStatus || '-'}</TableCell>
+                    <TableCell align="center">{r.ppSample || '-'}</TableCell>
+                    <TableCell align="center">{r.prr || '-'}</TableCell>
+                    <TableCell align="center">{r.cutRelease || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.cutQty)}</TableCell>
+                    <TableCell align="center">{r.topSample || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.sewQty)}</TableCell>
+                    <TableCell align="center">{r.inlineQc || '-'}</TableCell>
+                    <TableCell align="center">{r.finalQc || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.packedQty)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: 'success.main' }}>{fmtNum(r.readyToShip)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.inTransit)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.receivedQty)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: r.shipVariance < 0 ? 'error.main' : 'success.main' }}>{fmtNum(r.shipVariance)}</TableCell>
+                    <TableCell align="center">{r.shipDate ? r.shipDate.slice(0, 10) : '-'}</TableCell>
+                    <TableCell align="center"><Chip label={r.risk} size="small" color={r.risk === 'High' ? 'error' : r.risk === 'Medium' ? 'warning' : 'success'} /></TableCell>
+                    <TableCell align="center">{r.updated ? r.updated.slice(0, 10) : '-'}</TableCell>
                   </TableRow>
-                  <TableRow>
-                    {hd('Style No.',    '#dbeafe')}
-                    {hd('Color',        '#dbeafe')}
-                    {hd('PO Number',    '#dbeafe')}
-                    {hd('Cliente',      '#dbeafe')}
-                    {hd('Size / Order Qty', '#dbeafe')}
-                    {hd('Total Cut',    '#f3f4f6', 'text.primary')}
-                    {hd('Balance',      '#f3f4f6', 'text.primary')}
-                    {hd('Total Sewn',   '#fff3cd', '#856404')}
-                    {hd('Balance',      '#fff3cd', '#856404')}
-                    {hd('Total Shipped','#d4edda', '#155724')}
-                    {hd('Balance',      '#d4edda', '#155724')}
+                ))
+              ) : (
+                fabricRows.length === 0 ? (
+                  <TableRow><TableCell colSpan={fabricHeaders.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>No FGPO data.</TableCell></TableRow>
+                ) : fabricRows.map((r: any) => (
+                  <TableRow key={r.f} hover>
+                    <TableCell>{r.customer}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{r.fgpo}</TableCell>
+                    <TableCell align="center">{r.status || '-'}</TableCell>
+                    <TableCell>{r.style || '-'}</TableCell>
+                    <TableCell>{r.color || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.orderQty)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: r.shipVariance < 0 ? 'error.main' : 'success.main' }}>{fmtNum(r.shipVariance)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabRequired)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabOrdered)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.millProduced)}</TableCell>
+                    <TableCell align="center">{r.millTest || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabExported)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabInTransit)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabReceived)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.recVariance)}</TableCell>
+                    <TableCell align="center">{r.fourPoint || '-'}</TableCell>
+                    <TableCell align="center">{r.intTest || '-'}</TableCell>
+                    <TableCell align="center">{r.shade || '-'}</TableCell>
+                    <TableCell align="center">{fmtNum(r.fabApproved)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.reserved)}</TableCell>
+                    <TableCell align="center">{fmtNum(r.issued)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: 'success.main' }}>{fmtNum(r.available)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: r.shortage > 0 ? 'error.main' : 'inherit' }}>{fmtNum(r.shortage)}</TableCell>
                   </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {wipRows.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={11} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                        No production data for the selected filter.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {wipRows.map((row, idx) => {
-                    const cutBal  = row.cutTotal   - row.orderQty;
-                    const sewBal  = row.sewTotal   - row.cutTotal;
-                    const shipBal = row.shippedTotal - row.orderQty;
-                    return (
-                      <TableRow key={idx} hover>
-                        <TableCell align="center">{row.first ? row.style  : ''}</TableCell>
-                        <TableCell align="center" sx={{ bgcolor: row.first ? '#fffde7' : 'transparent', fontWeight: 'bold' }}>
-                          {row.first ? row.color : ''}
-                        </TableCell>
-                        <TableCell align="center">{row.first ? row.po     : ''}</TableCell>
-                        <TableCell align="center">{row.first ? row.client : ''}</TableCell>
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-                            <span>{row.size}</span>
-                            <strong>{row.orderQty}</strong>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="center">{row.cutTotal}</TableCell>
-                        <TableCell align="center" sx={balanceCell(cutBal)}>{cutBal}</TableCell>
-                        <TableCell align="center">{row.sewTotal}</TableCell>
-                        <TableCell align="center" sx={balanceCell(sewBal)}>{sewBal}</TableCell>
-                        <TableCell align="center">{row.shippedTotal}</TableCell>
-                        <TableCell align="center" sx={balanceCell(shipBal)}>{shipBal}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-
-                  {wipRows.length > 0 && (
-                    <TableRow sx={{ bgcolor: '#f1f5f9' }}>
-                      <TableCell colSpan={4} align="right" sx={{ fontWeight: 'bold', pr: 2 }}>SUB-TOTAL</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{wipTotals.orderQty}</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{wipTotals.cutTotal}</TableCell>
-                      <TableCell align="center" sx={balanceCell(wipTotals.cutTotal - wipTotals.orderQty)}>{wipTotals.cutTotal - wipTotals.orderQty}</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{wipTotals.sewTotal}</TableCell>
-                      <TableCell align="center" sx={balanceCell(wipTotals.sewTotal - wipTotals.cutTotal)}>{wipTotals.sewTotal - wipTotals.cutTotal}</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>{wipTotals.shippedTotal}</TableCell>
-                      <TableCell align="center" sx={balanceCell(wipTotals.shippedTotal - wipTotals.orderQty)}>{wipTotals.shippedTotal - wipTotals.orderQty}</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
-
-        {tab === 1 && (
-          <Box>
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'grey.200', display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ color: 'primary.main' }}>Fabric and Cutting Control by PO</Typography>
-              <Chip label={`${fabricRows.length} record(s)`} size="small" color="primary" />
-            </Box>
-
-            <TableContainer sx={{ maxHeight: 'calc(100vh - 280px)' }}>
-              <Table stickyHeader size="small" sx={{ '& th, & td': { border: '1px solid #e0e0e0' } }}>
-                <TableHead>
-                  <TableRow>
-                    {hd('ORDER DETAILS',   '#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')} {hd('','#dbeafe')}
-                    {hd('FABRIC PURCHASED', '#e0f2fe', 'text.primary')} {hd('','#e0f2fe','text.primary')}
-                    {hd('CUTTING',          '#d4edda', '#155724')}       {hd('','#d4edda','#155724')}
-                  </TableRow>
-                  <TableRow>
-                    {hd('Style No.',  '#dbeafe')}
-                    {hd('Color',      '#dbeafe')}
-                    {hd('PO Number',  '#dbeafe')}
-                    {hd('Fabric Type','#dbeafe')}
-                    {hd('Size',       '#dbeafe')}
-                    {hd('Purchased (Yds)', '#e0f2fe', 'text.primary')}
-                    {hd('Quality',         '#e0f2fe', 'text.primary')}
-                    {hd('Cut',             '#d4edda', '#155724')}
-                    {hd('Pending',         '#d4edda', '#155724')}
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {Object.keys(fabricGrouped).length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                        No fabric records for the selected filter.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {Object.entries(fabricGrouped).map(([poNum, rows]) => {
-                    const totPurchased = rows.reduce((a, r) => a + r.purchased, 0);
-                    const totCut       = rows.reduce((a, r) => a + r.cut, 0);
-                    return (
-                      <React.Fragment key={poNum}>
-                        {rows.map((row, idx) => {
-                          const balance = row.purchased - row.cut;
-                          const first   = idx === 0;
-                          return (
-                            <TableRow key={row.id} hover>
-                              <TableCell align="center">{first ? row.style : ''}</TableCell>
-                              <TableCell align="center"
-                                sx={{ bgcolor: first ? '#fffde7' : 'transparent', fontWeight: 'bold' }}>
-                                {first ? row.color : ''}
-                              </TableCell>
-                              <TableCell align="center">{first ? poNum : ''}</TableCell>
-                              <TableCell align="center">{first ? row.fabricType : ''}</TableCell>
-                              <TableCell align="center">{row.size}</TableCell>
-                              <TableCell align="center" sx={{ fontWeight: 'bold' }}>{row.purchased}</TableCell>
-                              <TableCell align="center">
-                                <Chip
-                                  label={row.quality}
-                                  color={row.quality === 'Approved' ? 'success' : 'warning'}
-                                  size="small"
-                                />
-                              </TableCell>
-                              <TableCell align="center">{row.cut}</TableCell>
-                              <TableCell align="center" sx={balanceCell(balance, true)}>
-                                {balance}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                        <TableRow sx={{ bgcolor: '#f1f5f9' }}>
-                          <TableCell colSpan={5} align="right" sx={{ fontWeight: 'bold', pr: 2 }}>
-                            SUB-TTL {poNum}
-                          </TableCell>
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>{totPurchased}</TableCell>
-                          <TableCell />
-                          <TableCell align="center" sx={{ fontWeight: 'bold' }}>{totCut}</TableCell>
-                          <TableCell align="center" sx={balanceCell(totPurchased - totCut, true)}>
-                            {totPurchased - totCut}
-                          </TableCell>
-                        </TableRow>
-                      </React.Fragment>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
     </Box>
   );

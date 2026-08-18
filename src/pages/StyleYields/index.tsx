@@ -162,8 +162,8 @@ const StyleYieldsPage: React.FC = () => {
                 </Select>
               </FormControl>
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField fullWidth size="small" label="Yield Quoted" type="number" step="any" value={form.YieldQuoted} onChange={e => setForm({ ...form, YieldQuoted: e.target.value })} />
-                <TextField fullWidth size="small" label="Yield Real" type="number" step="any" value={form.YieldReal} onChange={e => setForm({ ...form, YieldReal: e.target.value })} />
+                <TextField fullWidth size="small" label="Yield Quoted" type="number" value={form.YieldQuoted} onChange={e => setForm({ ...form, YieldQuoted: e.target.value })} />
+                <TextField fullWidth size="small" label="Yield Real" type="number" value={form.YieldReal} onChange={e => setForm({ ...form, YieldReal: e.target.value })} />
               </Box>
               <TextField fullWidth size="small" label="Notes" value={form.Notes} onChange={e => setForm({ ...form, Notes: e.target.value })} />
             </Box>

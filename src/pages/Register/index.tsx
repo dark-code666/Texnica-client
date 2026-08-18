@@ -17,7 +17,8 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import api from '../../utils/api';
+import api, { authApi } from '../../utils/api';
+import { encryptRsaOaep } from '../../utils/crypto';
 
 const Register: React.FC = () => {
   const { login } = useContext(AuthContext);
@@ -47,10 +48,13 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
+      // Cifrar el password en el navegador para que no viaje en claro
+      const keyRes = await authApi.getPublicKey();
+      const encryptedPassword = await encryptRsaOaep(keyRes.data.publicKey, password);
       const res = await api.post('/auth/register', {
         userName,
         userEmail: email,
-        password,
+        encryptedPassword,
       });
       login(res.data.token, res.data.user);
       navigate('/');

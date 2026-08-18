@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { fabricPOsApi, fgpoApi } from '../../utils/api';
+import { fabricPOsApi, fgpoApi, fabricRequirementsApi } from '../../utils/api';
 import { useSupplierOptions } from '../../hooks/suppliers/useSupplierOptions';
 import { useComponentOptions } from '../../hooks/components/useComponentOptions';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
@@ -163,6 +163,8 @@ const FabricPO: React.FC = () => {
   const [formError, setFormError] = useState('');
   const [detailItem, setDetailItem] = useState<FabricPO | null>(null);
   const [fgpos, setFgpos] = useState<FgpoOption[]>([]);
+  // NetPurchaseRequirement por FGPO (desde Fabric Requirement) para auto-llenar la asignación
+  const [reqByFgpo, setReqByFgpo] = useState<Record<number, number>>({});
   const { options: supplierList } = useSupplierOptions();
   const { options: componentList } = useComponentOptions();
   const { options: userList } = useUserOptions();
@@ -175,7 +177,7 @@ const FabricPO: React.FC = () => {
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const fgpoRes = await fgpoApi.getAll();
+        const [fgpoRes, reqRes] = await Promise.all([fgpoApi.getAll(), fabricRequirementsApi.getAll()]);
         setFgpos((fgpoRes.data ?? []).map((f: any) => ({
           ID: f.id ?? f.ID,
           FGPONumber: f.fgpoNumber ?? f.FGPONumber ?? '',
@@ -184,6 +186,14 @@ const FabricPO: React.FC = () => {
           Color: f.color ?? f.Color,
           OrderQuantity: f.orderQuantity ?? f.OrderQuantity ?? 0,
         })));
+        // Suma del NetPurchaseRequirement por FGPO (auto-carga para la asignación)
+        const map: Record<number, number> = {};
+        (reqRes.data ?? []).forEach((r: any) => {
+          const fgpoId = r.fgpoId ?? r.FGPOId ?? 0;
+          if (!fgpoId) return;
+          map[fgpoId] = (map[fgpoId] ?? 0) + Number(r.netPurchaseRequirement ?? r.NetPurchaseRequirement ?? 0);
+        });
+        setReqByFgpo(map);
       } catch (err: any) {
         setError(err?.response?.data?.message || 'Failed to load options.');
       }
@@ -258,10 +268,12 @@ const FabricPO: React.FC = () => {
         FGPOId: opt.ID,
         Style: prev?.Style ?? opt.Style ?? '',
         Color: prev?.Color ?? opt.Color ?? '',
-        AllocatedQuantity: prev?.AllocatedQuantity ?? 0,
+        // Auto-carga desde Fabric Requirement (NetPurchaseRequirement) si es nuevo
+        AllocatedQuantity: prev?.AllocatedQuantity ?? (reqByFgpo[opt.ID] ?? 0),
       };
     });
-    setForm({ ...form, FgpoItems: newItems });
+    const totalAlloc = newItems.reduce((sum, i) => sum + i.AllocatedQuantity, 0);
+    setForm({ ...form, FgpoItems: newItems, OrderedQuantity: totalAlloc || form.OrderedQuantity });
   };
 
   const updateFgpoItem = (fgpoId: number, field: keyof FgpoItem, value: string | number) => {
@@ -269,6 +281,13 @@ const FabricPO: React.FC = () => {
       ...form,
       FgpoItems: form.FgpoItems.map(i => i.FGPOId === fgpoId ? { ...i, [field]: value } : i),
     });
+  };
+
+  // Recalcular OrderedQuantity como suma de las asignaciones
+  const handleAllocatedQtyChange = (fgpoId: number, value: number) => {
+    updateFgpoItem(fgpoId, 'AllocatedQuantity', value);
+    const total = form.FgpoItems.reduce((sum, i) => sum + (i.FGPOId === fgpoId ? value : (Number(i.AllocatedQuantity) || 0)), 0);
+    setForm(prev => ({ ...prev, OrderedQuantity: total }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -609,7 +628,7 @@ const FabricPO: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <TextField size="small" type="number" value={item.AllocatedQuantity}
-                                onChange={e => updateFgpoItem(item.FGPOId, 'AllocatedQuantity', Number(e.target.value))} />
+                                onChange={e => handleAllocatedQtyChange(item.FGPOId, Number(e.target.value))} />
                             </TableCell>
                           </TableRow>
                         );

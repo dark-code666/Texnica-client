@@ -81,7 +81,7 @@ export interface DataContextType {
   purchaseOrders: PurchaseOrder[];
   fabricData: FabricData[];
   addUser: (u: Omit<User, 'id' | 'status'>) => void;
-  addRole: (r: Omit<Role, 'id'>) => void;
+  addRole: (r: Omit<Role, 'ID'>) => void;
   addClient: (c: Omit<Client, 'id'>) => void;
   addPO: (po: Omit<PurchaseOrder, 'status' | 'production'>) => void;
 }

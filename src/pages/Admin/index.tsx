@@ -14,7 +14,7 @@ const Admin: React.FC = () => {
   const { users, roles, clients, addUser, addRole, addClient } = useContext(DataContext);
   
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Administrator' });
-  const [newRole, setNewRole] = useState({ name: '', permissions: '' });
+  const [newRole, setNewRole] = useState({ name: '', description: '' });
   const [newClient, setNewClient] = useState({ name: '', contact: '', phone: '' });
 
   const handleAddUser = (e: FormEvent) => {
@@ -26,9 +26,9 @@ const Admin: React.FC = () => {
 
   const handleAddRole = (e: FormEvent) => {
     e.preventDefault();
-    if (!newRole.name || !newRole.permissions) return;
-    addRole(newRole);
-    setNewRole({ name: '', permissions: '' });
+    if (!newRole.name) return;
+    addRole({ Name: newRole.name, Description: newRole.description, Active: true, Permissions: [] });
+    setNewRole({ name: '', description: '' });
   };
 
   const handleAddClient = (e: FormEvent) => {
@@ -73,7 +73,7 @@ const Admin: React.FC = () => {
                 value={newUser.role} label="Role"
                 onChange={e => setNewUser({...newUser, role: e.target.value as string})}
               >
-                {roles.map(r => <MenuItem key={r.id} value={r.name}>{r.name}</MenuItem>)}
+                {roles.map(r => <MenuItem key={r.ID} value={r.Name}>{r.Name}</MenuItem>)}
               </Select>
             </FormControl>
             <Button type="submit" variant="contained" color="primary">New User</Button>
@@ -128,8 +128,8 @@ const Admin: React.FC = () => {
               sx={{ flexGrow: 1, minWidth: 200 }}
             />
             <TextField 
-              label="Permissions (e.g. View, Create)" size="small" variant="outlined"
-              value={newRole.permissions} onChange={e => setNewRole({...newRole, permissions: e.target.value})}
+              label="Description" size="small" variant="outlined"
+              value={newRole.description} onChange={e => setNewRole({...newRole, description: e.target.value})}
               sx={{ flexGrow: 2, minWidth: 200 }}
             />
             <Button type="submit" variant="contained" color="primary">New Role</Button>
@@ -145,9 +145,9 @@ const Admin: React.FC = () => {
               </TableHead>
               <TableBody>
                 {roles.map(role => (
-                  <TableRow key={role.id} hover>
-                    <TableCell>{role.name}</TableCell>
-                    <TableCell>{role.permissions}</TableCell>
+                  <TableRow key={role.ID} hover>
+                    <TableCell>{role.Name}</TableCell>
+                    <TableCell>{role.Permissions?.length ? role.Permissions.map(p => p.Name).join(', ') : '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

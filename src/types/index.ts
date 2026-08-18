@@ -39,5 +39,8 @@ export * from './sewingProduction';
 export * from './aqlInspection';
 export * from './fabricInventory';
 export * from './fabricReservation';
+export * from './packingControl';
+export * from './finishedGood';
+export * from './shipmentControl';
 export * from './lot';
 export * from './auth';

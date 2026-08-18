@@ -177,7 +177,7 @@ const PricesPage: React.FC = () => {
               </Box>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField fullWidth size="small" label="SKU (ej. B1001BLK01)" value={form.Sku} onChange={e => setForm({ ...form, Sku: e.target.value })} />
-                <TextField fullWidth size="small" label="Unit Price *" type="number" step="any" value={form.UnitPrice} onChange={e => setForm({ ...form, UnitPrice: e.target.value })} required />
+                <TextField fullWidth size="small" label="Unit Price *" type="number" value={form.UnitPrice} onChange={e => setForm({ ...form, UnitPrice: e.target.value })} required />
               </Box>
               <TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setForm({ ...form, Comments: e.target.value })} />
             </Box>

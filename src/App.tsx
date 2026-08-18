@@ -243,7 +243,6 @@ function App() {
 
                   <Route path="po/new" element={<CreatePO />} />
                   <Route path="po/:id" element={<PurchaseOrder />} />
-                  <Route path="po/demo" element={<PurchaseOrder />} />
                 </Route>
               </Route>
 

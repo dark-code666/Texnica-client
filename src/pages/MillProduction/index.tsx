@@ -204,20 +204,26 @@ const MillProductionPage: React.FC = () => {
                   const v = Number(e.target.value);
                   const po = poList.find((p: any) => (p.id ?? p.ID) === v);
                   setF('FabricPOId', v);
-                  setF('Supplier', (po?.supplier) || form.Supplier);
+                  setF('Supplier', (po as any)?.sub || form.Supplier);
                   setF('FabricComponent', (po as any)?.meta?.fabricComponent || form.FabricComponent);
                 }}>
                   <MenuItem value=""><em>Select a Fabric PO...</em></MenuItem>
-                  {poList.map((p: any) => <MenuItem key={p.id ?? p.ID} value={p.id ?? p.ID}>{p.fabricPONumber ?? p.FabricPONumber} {(p.supplier ?? p.Supplier) ? `— ${p.supplier ?? p.Supplier}` : ''}</MenuItem>)}
+                  {poList.map((p: any) => <MenuItem key={p.id ?? p.ID} value={p.id ?? p.ID}>{p.label || (p.fabricPONumber ?? p.FabricPONumber)}{(p as any)?.sub ? ` — ${(p as any).sub}` : ''}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>FGPO *</InputLabel>
-                <Select value={form.FGPOId || ''} label="FGPO *" onChange={e => setF('FGPOId', Number(e.target.value))}>
+                <Select value={form.FGPOId || ''} label="FGPO *" onChange={e => {
+                  const v = Number(e.target.value);
+                  const fg = fgpoList.find((f: any) => (f.id ?? f.ID) === v);
+                  setF('FGPOId', v);
+                  setF('Style', (fg as any)?.meta?.style || form.Style);
+                  setF('Color', (fg as any)?.meta?.color || form.Color);
+                }}>
                   <MenuItem value=""><em>Select a FGPO...</em></MenuItem>
-                  {fgpoList.map((f: any) => <MenuItem key={f.id ?? f.ID} value={f.id ?? f.ID}>{f.fgpoNumber ?? f.FGPONumber} — {f.customerName ?? f.CustomerName}</MenuItem>)}
+                  {fgpoList.map((f: any) => <MenuItem key={f.id ?? f.ID} value={f.id ?? f.ID}>{f.label || (f.fgpoNumber ?? f.FGPONumber)}{(f as any)?.sub ? ` — ${(f as any).sub}` : ''}</MenuItem>)}
                 </Select>
               </FormControl>
             </Grid>

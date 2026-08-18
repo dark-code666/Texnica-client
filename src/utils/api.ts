@@ -7,14 +7,18 @@ const api = axios.create({
   },
 });
 
-// Interceptor to add the token automatically
+// API Key: header exigido por el backend en /api/** — se lee únicamente del env
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+// Interceptor to add the token + API key automatically
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
-      if (config.headers) {
+    if (config.headers) {
+      if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      config.headers['X-API-Key'] = API_KEY;
     }
     return config;
   },
@@ -202,6 +206,39 @@ export const fabricReservationsApi = {
   getPaged: (params: any) => api.get('/fabric-reservations/paged', { params }),
 };
 
+// Packing Control API
+export const packingControlsApi = {
+  getAll: () => api.get('/packing-controls'),
+  getById: (id: number) => api.get(`/packing-controls/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/packing-controls/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/packing-controls', data),
+  update: (id: number, data: any) => api.put(`/packing-controls/${id}`, data),
+  delete: (id: number) => api.delete(`/packing-controls/${id}`),
+  getPaged: (params: any) => api.get('/packing-controls/paged', { params }),
+};
+
+// Finished Goods API
+export const finishedGoodsApi = {
+  getAll: () => api.get('/finished-goods'),
+  getById: (id: number) => api.get(`/finished-goods/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/finished-goods/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/finished-goods', data),
+  update: (id: number, data: any) => api.put(`/finished-goods/${id}`, data),
+  delete: (id: number) => api.delete(`/finished-goods/${id}`),
+  getPaged: (params: any) => api.get('/finished-goods/paged', { params }),
+};
+
+// Shipment Control API
+export const shipmentControlsApi = {
+  getAll: () => api.get('/shipment-controls'),
+  getById: (id: number) => api.get(`/shipment-controls/${id}`),
+  getByFgpo: (fgpoId: number) => api.get(`/shipment-controls/fgpo/${fgpoId}`),
+  create: (data: any) => api.post('/shipment-controls', data),
+  update: (id: number, data: any) => api.put(`/shipment-controls/${id}`, data),
+  delete: (id: number) => api.delete(`/shipment-controls/${id}`),
+  getPaged: (params: any) => api.get('/shipment-controls/paged', { params }),
+};
+
 // Lots API
 export const lotsApi = {
   getAll: () => api.get('/lots'),
@@ -364,6 +401,7 @@ export const stylesApi = {
   create: (data: any) => api.post('/styles', data),
   update: (id: number, data: any) => api.put(`/styles/${id}`, data),
   delete: (id: number) => api.delete(`/styles/${id}`),
+  getPaged: (params: any) => api.get('/styles/paged', { params }),
 };
 
 // Fabric API
@@ -374,6 +412,7 @@ export const fabricsApi = {
   create: (data: any) => api.post('/fabrics', data),
   update: (id: number, data: any) => api.put(`/fabrics/${id}`, data),
   delete: (id: number) => api.delete(`/fabrics/${id}`),
+  getPaged: (params: any) => api.get('/fabrics/paged', { params }),
 };
 
 // Color API
@@ -384,6 +423,7 @@ export const colorsApi = {
   create: (data: any) => api.post('/colors', data),
   update: (id: number, data: any) => api.put(`/colors/${id}`, data),
   delete: (id: number) => api.delete(`/colors/${id}`),
+  getPaged: (params: any) => api.get('/colors/paged', { params }),
 };
 
 // Size API
@@ -394,6 +434,7 @@ export const sizesApi = {
   create: (data: any) => api.post('/sizes', data),
   update: (id: number, data: any) => api.put(`/sizes/${id}`, data),
   delete: (id: number) => api.delete(`/sizes/${id}`),
+  getPaged: (params: any) => api.get('/sizes/paged', { params }),
 };
 
 // Component API
@@ -404,6 +445,7 @@ export const componentsApi = {
   create: (data: any) => api.post('/components', data),
   update: (id: number, data: any) => api.put(`/components/${id}`, data),
   delete: (id: number) => api.delete(`/components/${id}`),
+  getPaged: (params: any) => api.get('/components/paged', { params }),
 };
 
 // BoxType API
@@ -414,6 +456,7 @@ export const boxTypesApi = {
   create: (data: any) => api.post('/box-types', data),
   update: (id: number, data: any) => api.put(`/box-types/${id}`, data),
   delete: (id: number) => api.delete(`/box-types/${id}`),
+  getPaged: (params: any) => api.get('/box-types/paged', { params }),
 };
 
 // StyleYield API
@@ -424,6 +467,7 @@ export const styleYieldsApi = {
   create: (data: any) => api.post('/style-yields', data),
   update: (id: number, data: any) => api.put(`/style-yields/${id}`, data),
   delete: (id: number) => api.delete(`/style-yields/${id}`),
+  getPaged: (params: any) => api.get('/style-yields/paged', { params }),
 };
 
 // Price API
@@ -434,6 +478,7 @@ export const pricesApi = {
   create: (data: any) => api.post('/prices', data),
   update: (id: number, data: any) => api.put(`/prices/${id}`, data),
   delete: (id: number) => api.delete(`/prices/${id}`),
+  getPaged: (params: any) => api.get('/prices/paged', { params }),
 };
 
 // FgpoLine API
@@ -444,6 +489,7 @@ export const fgpoLinesApi = {
   create: (data: any) => api.post('/fgpo-lines', data),
   update: (id: number, data: any) => api.put(`/fgpo-lines/${id}`, data),
   delete: (id: number) => api.delete(`/fgpo-lines/${id}`),
+  getPaged: (params: any) => api.get('/fgpo-lines/paged', { params }),
 };
 
 // Trims Control API
@@ -485,6 +531,9 @@ export const authApi = {
     api.post('/auth/login', { userName, password }),
   register: (userName: string, userEmail: string, password: string) => 
     api.post('/auth/register', { userName, userEmail, password }),
+  getPublicKey: () => api.get('/auth/public-key'),
+  createUser: (userName: string, userEmail: string) => 
+    api.post('/auth/users', { userName, userEmail, password: 'inicio' }),
   changePassword: (currentPassword: string, newPassword: string) => 
     api.post('/auth/change-password', { currentPassword, newPassword }),
   changePasswordFirstLogin: (newPassword: string) => 
