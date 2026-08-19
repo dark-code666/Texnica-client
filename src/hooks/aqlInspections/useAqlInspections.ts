@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useResource } from '../useResource';
 import { aqlInspectionsApi } from '../../utils/api';
 import { AqlInspection } from '../../types';
@@ -36,10 +37,15 @@ const mapAqlInspection = (raw: any): AqlInspection => ({
 
 /** Hook de AQL Inspection: consume /api/aql-inspections (opcionalmente filtrado por tipo) */
 export const useAqlInspections = (type?: string) => {
-  const apiResource = {
-    ...aqlInspectionsApi,
-    getPaged: (params: any) =>
-      aqlInspectionsApi.getPaged({ ...params, ...(type ? { type } : {}) }),
-  };
+  // IMPORTANTE: memorizar el objeto apiResource para que useResource NO re-dispare
+  // la carga en cada render (evita bucle de peticiones / parpadeo de la página).
+  const apiResource = useMemo(
+    () => ({
+      ...aqlInspectionsApi,
+      getPaged: (params: any) =>
+        aqlInspectionsApi.getPaged({ ...params, ...(type ? { type } : {}) }),
+    }),
+    [type]
+  );
   return useResource<AqlInspection>(apiResource, mapAqlInspection);
 };
