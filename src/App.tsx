@@ -62,7 +62,6 @@ import ShipmentControl from './pages/ShipmentControl';
 
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 
@@ -96,7 +95,7 @@ const theme = createTheme({
 const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const { user } = useContext(AuthContext);
+  const { user, selectedCustomer } = useContext(AuthContext);
   const drawerWidth = 240;
 
   const handleDrawerToggle = () => {
@@ -144,6 +143,11 @@ const Layout = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
             TPCS Texnica Production Control System
           </Typography>
+          {selectedCustomer && (
+            <Typography variant="body2" sx={{ mr: 2, fontWeight: 600 }}>
+              Cliente: {selectedCustomer.name}
+            </Typography>
+          )}
           <IconButton color="primary">
             <NotificationsIcon />
           </IconButton>
@@ -185,7 +189,6 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>

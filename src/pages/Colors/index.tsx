@@ -16,6 +16,8 @@ import { Color } from '../../types';
 
 const mapColor = (raw: any): Color => ({
   id: raw.id ?? raw.ID ?? 0,
+  colorCode: raw.colorCode ?? raw.ColorCode ?? '',
+  alternateCode: raw.alternateCode ?? raw.AlternateCode ?? '',
   colorName: raw.colorName ?? raw.ColorName ?? '',
   dyeMethod: raw.dyeMethod ?? raw.DyeMethod ?? '',
   active: raw.active ?? raw.Active ?? true,
@@ -23,7 +25,7 @@ const mapColor = (raw: any): Color => ({
   updatedAt: raw.updatedAt ?? raw.UpdatedAt,
 });
 
-const emptyForm = { ColorName: '', DyeMethod: '' };
+const emptyForm = { ColorCode: '', AlternateCode: '', ColorName: '', DyeMethod: '' };
 
 const ColorsPage: React.FC = () => {
   const [items, setItems] = useState<Color[]>([]);
@@ -46,7 +48,9 @@ const ColorsPage: React.FC = () => {
 
   const filtered = items.filter(i =>
     !search || i.colorName.toLowerCase().includes(search.toLowerCase()) ||
-    (i.dyeMethod ?? '').toLowerCase().includes(search.toLowerCase()));
+    (i.dyeMethod ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (i.colorCode ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (i.alternateCode ?? '').toLowerCase().includes(search.toLowerCase()));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault(); setFormError(''); setSaving(true);
@@ -63,7 +67,7 @@ const ColorsPage: React.FC = () => {
   };
 
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setFormError(''); setDialogOpen(true); };
-  const openEdit = (c: Color) => { setEditingId(c.id); setForm({ ColorName: c.colorName, DyeMethod: c.dyeMethod ?? '' }); setFormError(''); setDialogOpen(true); };
+  const openEdit = (c: Color) => { setEditingId(c.id); setForm({ ColorCode: c.colorCode ?? '', AlternateCode: c.alternateCode ?? '', ColorName: c.colorName, DyeMethod: c.dyeMethod ?? '' }); setFormError(''); setDialogOpen(true); };
 
   return (
     <Box>
@@ -93,16 +97,18 @@ const ColorsPage: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                {['Color', 'Dye Method', 'Actions'].map(h => <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>)}
+                {['Code', 'Alternate Code', 'Color', 'Dye Method', 'Actions'].map(h => <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>)}
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 6, color: 'text.secondary' }}>No colors found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>No colors found</TableCell></TableRow>
               ) : filtered.map((c) => (
                 <TableRow key={c.id} hover>
+                  <TableCell>{c.colorCode || '-'}</TableCell>
+                  <TableCell>{c.alternateCode || '-'}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{c.colorName}</TableCell>
                   <TableCell>{c.dyeMethod || '-'}</TableCell>
                   <TableCell>
@@ -123,6 +129,8 @@ const ColorsPage: React.FC = () => {
             {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField fullWidth size="small" label="Color Name *" value={form.ColorName} onChange={e => setForm({ ...form, ColorName: e.target.value })} required />
+              <TextField fullWidth size="small" label="Color Code" value={form.ColorCode} onChange={e => setForm({ ...form, ColorCode: e.target.value })} />
+              <TextField fullWidth size="small" label="Alternate Code" value={form.AlternateCode} onChange={e => setForm({ ...form, AlternateCode: e.target.value })} />
               <TextField fullWidth size="small" label="Dye Method" value={form.DyeMethod} onChange={e => setForm({ ...form, DyeMethod: e.target.value })} />
             </Box>
           </DialogContent>

@@ -14,9 +14,25 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    const selectedCustomer = localStorage.getItem('selectedCustomer');
     if (config.headers) {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      if (selectedCustomer) {
+        const customer = JSON.parse(selectedCustomer);
+        config.headers['X-Customer-Id'] = String(customer.id);
+
+        if (config.params && typeof config.params === 'object') {
+          config.params = { ...config.params, customerId: customer.id };
+        }
+
+        if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+          config.data = {
+            ...config.data,
+            CustomerId: config.data.CustomerId || customer.id,
+          };
+        }
       }
       config.headers['X-API-Key'] = API_KEY;
     }
@@ -532,6 +548,7 @@ export const authApi = {
   register: (userName: string, userEmail: string, password: string) => 
     api.post('/auth/register', { userName, userEmail, password }),
   getPublicKey: () => api.get('/auth/public-key'),
+  getLoginCustomers: () => api.get('/auth/login-customers'),
   createUser: (userName: string, userEmail: string) => 
     api.post('/auth/users', { userName, userEmail, password: 'inicio' }),
   changePassword: (currentPassword: string, newPassword: string) => 

@@ -8,6 +8,8 @@ export interface User {
   email?: string;
   active: boolean;
   mustChangePassword?: boolean;
+  customerId?: number;
+  customerName?: string;
 }
 
 
@@ -18,6 +20,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   setMustChangePassword: (value: boolean) => void;
+  selectedCustomer: { id: number; name: string } | null;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -27,6 +30,7 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   isAuthenticated: false,
   setMustChangePassword: () => {},
+  selectedCustomer: null,
 });
 
 interface AuthProviderProps {
@@ -37,11 +41,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedCustomer, setSelectedCustomer] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     // Check if token exists in localStorage on mount
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
+    const storedCustomer = localStorage.getItem('selectedCustomer');
 
     if (storedToken && storedUser) {
       try {
@@ -52,8 +58,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (decodedToken.exp && decodedToken.exp < currentTime) {
           logout();
         } else {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          if (!storedCustomer) {
+            logout();
+          } else {
+            setToken(storedToken);
+            setUser(JSON.parse(storedUser));
+            setSelectedCustomer(JSON.parse(storedCustomer));
+          }
         }
       } catch (error) {
         logout();
@@ -67,11 +78,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
+    const customer = userData.customerId && userData.customerName
+      ? { id: Number(userData.customerId), name: userData.customerName }
+      : null;
+    setSelectedCustomer(customer);
+    if (customer) localStorage.setItem('selectedCustomer', JSON.stringify(customer));
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('selectedCustomer');
     setToken(null);
     setUser(null);
   };
@@ -98,6 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         isAuthenticated: !!token,
         setMustChangePassword,
+        selectedCustomer,
       }}
     >
       {children}

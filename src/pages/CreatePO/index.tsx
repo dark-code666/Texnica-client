@@ -1,10 +1,11 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, TextField, Button, Grid, Alert, MenuItem, Select, FormControl, InputLabel
 } from '@mui/material';
 import { fgpoApi, customersApi } from '../../utils/api';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
+import { AuthContext } from '../../context/AuthContext';
 
 const STATUS_OPTIONS = [
   'Not Started', 'Pending', 'In Progress', 'Partially Completed', 'Completed',
@@ -18,11 +19,18 @@ const emptyForm = {
 
 const CreatePO: React.FC = () => {
   const navigate = useNavigate();
+  const { selectedCustomer } = useContext(AuthContext);
   const { options: userList } = useUserOptions();
   const [customers, setCustomers] = useState<{ ID: number; Name: string }[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      setForm(prev => ({ ...prev, CustomerId: selectedCustomer.id }));
+    }
+  }, [selectedCustomer]);
 
   useEffect(() => {
     const load = async () => {
@@ -98,9 +106,15 @@ const CreatePO: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="medium">
                 <InputLabel>Customer *</InputLabel>
-                <Select label="Customer *" value={form.CustomerId || ''} onChange={e => setF('CustomerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a customer...</em></MenuItem>
-                  {customers.map(c => <MenuItem key={c.ID} value={c.ID}>{c.Name}</MenuItem>)}
+                <Select label="Customer *" value={form.CustomerId || ''} disabled={!!selectedCustomer} onChange={e => setF('CustomerId', Number(e.target.value))}>
+                  {selectedCustomer ? (
+                    <MenuItem value={selectedCustomer.id}>{selectedCustomer.name}</MenuItem>
+                  ) : (
+                    <>
+                      <MenuItem value=""><em>Select a customer...</em></MenuItem>
+                      {customers.map(c => <MenuItem key={c.ID} value={c.ID}>{c.Name}</MenuItem>)}
+                    </>
+                  )}
                 </Select>
               </FormControl>
             </Grid>

@@ -7,6 +7,8 @@ export interface Fabric {
   color?: string;
   content?: string;
   construction?: string;
+  threadTitle?: string;
+  threadQuality?: string;
   gsm?: number;
   weightOz?: number;
   comments?: string;
@@ -21,6 +23,8 @@ export interface CreateFabricInput {
   color?: string;
   content?: string;
   construction?: string;
+  threadTitle?: string;
+  threadQuality?: string;
   gsm?: number;
   weightOz?: number;
   comments?: string;

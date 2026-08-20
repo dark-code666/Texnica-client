@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent, useContext } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, TextField, Paper, Chip, CircularProgress, Alert, Dialog, DialogTitle,
@@ -13,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { fgpoApi, customersApi } from '../../utils/api';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
+import { AuthContext } from '../../context/AuthContext';
 
 interface Fgpo {
   ID: number;
@@ -119,6 +120,7 @@ const mapFgpo = (raw: any): Fgpo => ({
 });
 
 const Fgpo: React.FC = () => {
+  const { selectedCustomer } = useContext(AuthContext);
 
   const [fgpos, setFgpos] = useState<Fgpo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,6 +151,12 @@ const Fgpo: React.FC = () => {
   // Customer options for dropdowns
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const { options: userList } = useUserOptions();
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      setCustomerFilter(selectedCustomer.name);
+    }
+  }, [selectedCustomer]);
 
   useEffect(() => {
     loadData();
@@ -214,7 +222,7 @@ const Fgpo: React.FC = () => {
 
   const openCreateDialog = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, CustomerId: selectedCustomer?.id ?? 0 });
     setFormError('');
     setDialogOpen(true);
   };
@@ -414,6 +422,7 @@ const Fgpo: React.FC = () => {
             <Select
               value={customerFilter}
               label="Customer"
+              disabled={!!selectedCustomer}
               onChange={e => { setCustomerFilter(e.target.value); setPage(0); }}
             >
               <MenuItem value="">All</MenuItem>
@@ -563,6 +572,7 @@ const Fgpo: React.FC = () => {
                 <Select
                   value={form.CustomerId}
                   label="Customer *"
+                  disabled={!!selectedCustomer}
                   onChange={e => setForm({ ...form, CustomerId: Number(e.target.value) })}
                 >
                   <MenuItem value={0}>Select customer...</MenuItem>

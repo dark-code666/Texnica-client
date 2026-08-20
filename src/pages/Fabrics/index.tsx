@@ -21,6 +21,8 @@ const mapFabric = (raw: any): Fabric => ({
   color: raw.color ?? raw.Color ?? '',
   content: raw.content ?? raw.Content ?? '',
   construction: raw.construction ?? raw.Construction ?? '',
+  threadTitle: raw.threadTitle ?? raw.ThreadTitle ?? '',
+  threadQuality: raw.threadQuality ?? raw.ThreadQuality ?? '',
   gsm: raw.gsm ?? raw.Gsm,
   weightOz: raw.weightOz ?? raw.WeightOz,
   comments: raw.comments ?? raw.Comments ?? '',
@@ -30,7 +32,7 @@ const mapFabric = (raw: any): Fabric => ({
 });
 
 const emptyForm = {
-  FabricReference: '', FabricName: '', Color: '', Content: '', Construction: '', Gsm: '', WeightOz: '', Comments: '',
+  FabricReference: '', FabricName: '', Color: '', Content: '', Construction: '', ThreadTitle: '', ThreadQuality: '', Gsm: '', WeightOz: '', Comments: '',
 };
 
 const FabricsPage: React.FC = () => {
@@ -55,7 +57,9 @@ const FabricsPage: React.FC = () => {
   const filtered = items.filter(i =>
     !search || i.fabricName.toLowerCase().includes(search.toLowerCase()) ||
     (i.color ?? '').toLowerCase().includes(search.toLowerCase()) ||
-    (i.fabricReference ?? '').toLowerCase().includes(search.toLowerCase()));
+    (i.fabricReference ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (i.threadTitle ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (i.threadQuality ?? '').toLowerCase().includes(search.toLowerCase()));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -76,7 +80,7 @@ const FabricsPage: React.FC = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setFormError(''); setDialogOpen(true); };
   const openEdit = (f: Fabric) => {
     setEditingId(f.id);
-    setForm({ FabricReference: f.fabricReference ?? '', FabricName: f.fabricName, Color: f.color ?? '', Content: f.content ?? '', Construction: f.construction ?? '', Gsm: f.gsm?.toString() ?? '', WeightOz: f.weightOz?.toString() ?? '', Comments: f.comments ?? '' });
+    setForm({ FabricReference: f.fabricReference ?? '', FabricName: f.fabricName, Color: f.color ?? '', Content: f.content ?? '', Construction: f.construction ?? '', ThreadTitle: f.threadTitle ?? '', ThreadQuality: f.threadQuality ?? '', Gsm: f.gsm?.toString() ?? '', WeightOz: f.weightOz?.toString() ?? '', Comments: f.comments ?? '' });
     setFormError(''); setDialogOpen(true);
   };
 
@@ -108,15 +112,15 @@ const FabricsPage: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                {['Reference', 'Fabric', 'Color', 'Content', 'Construction', 'GSM', 'Weight (oz)', 'Actions'].map(h =>
+                {['Reference', 'Fabric', 'Color', 'Content', 'Construction', 'Thread Title', 'Thread Quality', 'GSM', 'Weight (oz)', 'Actions'].map(h =>
                   <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>)}
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary' }}>No fabrics found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} align="center" sx={{ py: 6, color: 'text.secondary' }}>No fabrics found</TableCell></TableRow>
               ) : filtered.map((f) => (
                 <TableRow key={f.id} hover>
                   <TableCell>{f.fabricReference || '-'}</TableCell>
@@ -124,6 +128,8 @@ const FabricsPage: React.FC = () => {
                   <TableCell>{f.color || '-'}</TableCell>
                   <TableCell>{f.content || '-'}</TableCell>
                   <TableCell>{f.construction || '-'}</TableCell>
+                  <TableCell>{f.threadTitle || '-'}</TableCell>
+                  <TableCell>{f.threadQuality || '-'}</TableCell>
                   <TableCell>{f.gsm ?? '-'}</TableCell>
                   <TableCell>{f.weightOz ?? '-'}</TableCell>
                   <TableCell>
@@ -148,6 +154,8 @@ const FabricsPage: React.FC = () => {
               <TextField fullWidth size="small" label="Color" value={form.Color} onChange={e => setForm({ ...form, Color: e.target.value })} />
               <TextField fullWidth size="small" label="Content" value={form.Content} onChange={e => setForm({ ...form, Content: e.target.value })} />
               <TextField fullWidth size="small" label="Construction" value={form.Construction} onChange={e => setForm({ ...form, Construction: e.target.value })} />
+              <TextField fullWidth size="small" label="Thread Title" value={form.ThreadTitle} onChange={e => setForm({ ...form, ThreadTitle: e.target.value })} />
+              <TextField fullWidth size="small" label="Thread Quality" value={form.ThreadQuality} onChange={e => setForm({ ...form, ThreadQuality: e.target.value })} />
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField fullWidth size="small" label="GSM" type="number" value={form.Gsm} onChange={e => setForm({ ...form, Gsm: e.target.value })} />
                 <TextField fullWidth size="small" label="Weight (oz/yd²)" type="number" value={form.WeightOz} onChange={e => setForm({ ...form, WeightOz: e.target.value })} />

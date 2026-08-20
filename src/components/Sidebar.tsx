@@ -80,7 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
       title: 'Fabric',
       icon: <CategoryIcon />,
       subItems: [
-        { text: 'FGPO Master',      icon: <AssignmentIcon fontSize="small" />,             path: '/fgpo' },
         { text: 'Fabric Requirement', icon: <LocalShippingIcon fontSize="small" />,        path: '/fabric-requirement' },
         { text: 'Fabric PO',        icon: <ReceiptIcon fontSize="small" />,                path: '/fabric-po' },
         { text: 'Mill Production',  icon: <PrecisionManufacturingIcon fontSize="small" />, path: '/mill-production' },
@@ -147,6 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle, drawe
         { text: 'Style Yields', icon: <PercentIcon fontSize="small" />,               path: '/admin/style-yields' },
         { text: 'Prices',       icon: <AttachMoneyIcon fontSize="small" />,           path: '/admin/prices' },
         { text: 'FGPO Lines',   icon: <FormatListNumberedIcon fontSize="small" />,    path: '/admin/fgpo-lines' },
+        { text: 'FGPO Master',  icon: <AssignmentIcon fontSize="small" />,             path: '/fgpo' },
       ],
     },
   ];

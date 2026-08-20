@@ -7,15 +7,17 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Link,
   InputAdornment,
   IconButton,
-  Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import api, { authApi } from '../../utils/api';
 import { encryptRsaOaep } from '../../utils/crypto';
@@ -29,10 +31,22 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [customers, setCustomers] = useState<{ id: number; name: string }[]>([]);
+  const [customerId, setCustomerId] = useState('');
+
+  React.useEffect(() => {
+    authApi.getLoginCustomers()
+      .then((res) => setCustomers(res.data ?? []))
+      .catch(() => setError('No se pudieron cargar los clientes.'));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!customerId) {
+      setError('Selecciona un cliente para continuar.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -42,6 +56,7 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/login', {
         userName,
         encryptedPassword,
+        customerId: Number(customerId),
       });
       login(res.data.token, res.data.user);
       navigate('/');
@@ -159,6 +174,22 @@ const Login: React.FC = () => {
             }}
           />
 
+          <FormControl fullWidth required sx={{ mb: 2.5 }}>
+            <InputLabel id="customer-label">Customer</InputLabel>
+            <Select
+              labelId="customer-label"
+              label="Cliente"
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
+            >
+              {customers.map((customer) => (
+                <MenuItem key={customer.id} value={customer.id}>
+                  {customer.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Button
             type="submit"
             fullWidth
@@ -178,16 +209,6 @@ const Login: React.FC = () => {
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
           </Button>
 
-          <Divider sx={{ my: 3 }} />
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Don't have an account?{' '}
-              <Link component={RouterLink} to="/register" sx={{ fontWeight: 600 }} underline="hover">
-                Register here
-              </Link>
-            </Typography>
-          </Box>
         </Box>
       </Paper>
     </Box>

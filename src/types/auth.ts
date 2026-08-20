@@ -22,6 +22,8 @@ export interface User {
   roleId?: number | null;
   roleName?: string;
   mustChangePassword: boolean;
+  customerId?: number;
+  customerName?: string;
   active: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -30,6 +32,7 @@ export interface User {
 export interface LoginRequest {
   userName: string;
   password: string;
+  customerId: number;
 }
 
 export interface LoginResponse {

@@ -17,13 +17,14 @@ import { Size } from '../../types';
 const mapSize = (raw: any): Size => ({
   id: raw.id ?? raw.ID ?? 0,
   sizeCode: raw.sizeCode ?? raw.SizeCode ?? '',
+  description: raw.description ?? raw.Description ?? '',
   sortOrder: raw.sortOrder ?? raw.SortOrder ?? 0,
   active: raw.active ?? raw.Active ?? true,
   createdAt: raw.createdAt ?? raw.CreatedAt ?? '',
   updatedAt: raw.updatedAt ?? raw.UpdatedAt,
 });
 
-const emptyForm = { SizeCode: '', SortOrder: 0 };
+const emptyForm = { SizeCode: '', Description: '', SortOrder: 0 };
 
 const SizesPage: React.FC = () => {
   const [items, setItems] = useState<Size[]>([]);
@@ -44,7 +45,7 @@ const SizesPage: React.FC = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const filtered = items.filter(i => !search || i.sizeCode.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter(i => !search || i.sizeCode.toLowerCase().includes(search.toLowerCase()) || (i.description ?? '').toLowerCase().includes(search.toLowerCase()));
   const sorted = [...filtered].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -63,7 +64,7 @@ const SizesPage: React.FC = () => {
   };
 
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setFormError(''); setDialogOpen(true); };
-  const openEdit = (s: Size) => { setEditingId(s.id); setForm({ SizeCode: s.sizeCode, SortOrder: s.sortOrder }); setFormError(''); setDialogOpen(true); };
+  const openEdit = (s: Size) => { setEditingId(s.id); setForm({ SizeCode: s.sizeCode, Description: s.description ?? '', SortOrder: s.sortOrder }); setFormError(''); setDialogOpen(true); };
 
   return (
     <Box>
@@ -93,17 +94,18 @@ const SizesPage: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ backgroundColor: 'primary.main' }}>
-                {['Size', 'Sort Order', 'Actions'].map(h => <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>)}
+                {['Code', 'Description', 'Sort Order', 'Actions'].map(h => <TableCell key={h} sx={{ color: 'white', fontWeight: 600, py: 1.5 }}>{h}</TableCell>)}
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4 }}><CircularProgress size={28} /></TableCell></TableRow>
               ) : sorted.length === 0 ? (
-                <TableRow><TableCell colSpan={3} align="center" sx={{ py: 6, color: 'text.secondary' }}>No sizes found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 6, color: 'text.secondary' }}>No sizes found</TableCell></TableRow>
               ) : sorted.map((s) => (
                 <TableRow key={s.id} hover>
                   <TableCell sx={{ fontWeight: 600 }}>{s.sizeCode}</TableCell>
+                  <TableCell>{s.description || '-'}</TableCell>
                   <TableCell>{s.sortOrder}</TableCell>
                   <TableCell>
                     <Tooltip title="Editar"><IconButton size="small" color="info" onClick={() => openEdit(s)}><EditIcon fontSize="small" /></IconButton></Tooltip>
@@ -123,6 +125,7 @@ const SizesPage: React.FC = () => {
             {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <TextField fullWidth size="small" label="Size Code * (XS, S, M, L, XL, 2X...)" value={form.SizeCode} onChange={e => setForm({ ...form, SizeCode: e.target.value })} required />
+              <TextField fullWidth size="small" label="Description" value={form.Description} onChange={e => setForm({ ...form, Description: e.target.value })} />
               <TextField fullWidth size="small" label="Sort Order" type="number" value={form.SortOrder} onChange={e => setForm({ ...form, SortOrder: Number(e.target.value) })} />
             </Box>
           </DialogContent>

@@ -3,6 +3,7 @@
 export interface Size {
   id: number;
   sizeCode: string;
+  description?: string;
   sortOrder: number;
   active: boolean;
   createdAt: string;
@@ -11,5 +12,6 @@ export interface Size {
 
 export interface CreateSizeInput {
   sizeCode: string;
+  description?: string;
   sortOrder: number;
 }
