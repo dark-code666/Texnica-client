@@ -10,6 +10,7 @@ export interface User {
   mustChangePassword?: boolean;
   customerId?: number;
   customerName?: string;
+  userType?: 'Employee' | 'Client';
 }
 
 

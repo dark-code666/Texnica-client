@@ -19,6 +19,7 @@ import { useFabricReceivingOptions, FabricReceivingOption } from '../../hooks/fa
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { RollReceiving } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 const DEFAULT_CONDITIONS = ['Good', 'Damaged', 'Second Quality', 'Sample'];
 const DEFAULT_SHADE_GROUPS = ['A', 'B', 'C', 'D'];
@@ -282,11 +283,7 @@ const RollReceivingPage: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Warehouse Location" value={form.WarehouseLocation} onChange={e => setF('WarehouseLocation', e.target.value)} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>

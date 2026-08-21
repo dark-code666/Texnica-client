@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { authApi, rolesApi, userRoleApi, usersApi } from '../../utils/api';
+import { authApi, customersApi, rolesApi, userRoleApi, usersApi } from '../../utils/api';
 
 export interface Role {
   id: number;
@@ -16,12 +16,17 @@ export interface User {
   mustChangePassword: boolean;
   roleId?: number;
   roleName?: string;
+  userType: 'Employee' | 'Client';
+  customerId?: number;
+  customerName?: string;
 }
 
 export interface NewUserForm {
   name: string;
   email: string;
   roleId: number;
+  userType: 'Employee' | 'Client';
+  customerId: number;
 }
 
 const DEFAULT_PASSWORD = 'inicio';
@@ -29,9 +34,10 @@ const DEFAULT_PASSWORD = 'inicio';
 export const useAdminUsuarios = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [customers, setCustomers] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [newUser, setNewUser] = useState<NewUserForm>({ name: '', email: '', roleId: 1 });
+  const [newUser, setNewUser] = useState<NewUserForm>({ name: '', email: '', roleId: 1, userType: 'Employee', customerId: 0 });
   const [snackbar, setSnackbar] = useState('');
 
   const loadData = useCallback(async () => {
@@ -39,13 +45,15 @@ export const useAdminUsuarios = () => {
     setError('');
 
     try {
-      const [rolesRes, usersRes] = await Promise.all([
+      const [rolesRes, usersRes, customersRes] = await Promise.all([
         rolesApi.getAll(),
         usersApi.getAll(),
+        customersApi.getAll(),
       ]);
 
       setRoles(rolesRes.data);
       setUsers(usersRes.data);
+      setCustomers((customersRes.data ?? []).map((c: any) => ({ id: c.id ?? c.ID, name: c.name ?? c.Name })));
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to load data');
     } finally {
@@ -67,7 +75,11 @@ export const useAdminUsuarios = () => {
     }
 
     try {
-      const res = await authApi.createUser(newUser.name, newUser.email);
+      if (newUser.userType === 'Client' && !newUser.customerId) {
+        setError('A Client user must have an assigned customer.');
+        return;
+      }
+      const res = await authApi.createUser(newUser.name, newUser.email, newUser.userType, newUser.userType === 'Client' ? newUser.customerId : undefined);
       const createdUser = res.data.user;
 
       if (createdUser?.id && newUser.roleId) {
@@ -75,7 +87,7 @@ export const useAdminUsuarios = () => {
       }
 
       setSnackbar(`User "${newUser.name}" created successfully. Default password: "${DEFAULT_PASSWORD}"`);
-      setNewUser({ name: '', email: '', roleId: roles[0]?.id || 1 });
+      setNewUser({ name: '', email: '', roleId: roles[0]?.id || 1, userType: 'Employee', customerId: 0 });
       await loadData();
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Error creating the user.';
@@ -93,11 +105,29 @@ export const useAdminUsuarios = () => {
     }
   }, [loadData]);
 
+  const handleUpdateUser = useCallback(async (userId: number, data: any) => {
+    await usersApi.update(userId, data);
+    setSnackbar('User updated successfully.');
+    await loadData();
+  }, [loadData]);
+
+  const handleResetPassword = useCallback(async (userId: number, newPassword?: string) => {
+    await usersApi.resetPassword(userId, newPassword);
+    setSnackbar(newPassword ? 'Password reset successfully.' : 'Password reset to the default password.');
+  }, []);
+
+  const handleSetActive = useCallback(async (userId: number, active: boolean) => {
+    await usersApi.setActive(userId, active);
+    setSnackbar(active ? 'User activated successfully.' : 'User deactivated successfully.');
+    await loadData();
+  }, [loadData]);
+
   const defaultPassword = useMemo(() => DEFAULT_PASSWORD, []);
 
   return {
     users,
     roles,
+    customers,
     loading,
     error,
     newUser,
@@ -109,5 +139,8 @@ export const useAdminUsuarios = () => {
     loadData,
     handleCreateUser,
     handleAssignRole,
+    handleUpdateUser,
+    handleResetPassword,
+    handleSetActive,
   };
 };

@@ -13,6 +13,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { fabricRequirementsApi, fgpoApi, customersApi } from '../../utils/api';
+import { getCurrentUserName } from '../../utils/session';
 import { useComponentOptions } from '../../hooks/components/useComponentOptions';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 
@@ -789,17 +790,7 @@ const FabricRequirement: React.FC = () => {
                   {statusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
                 </Select>
               </FormControl>
-              <FormControl size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select
-                  value={form.DataOwnerId || ''}
-                  label="Data Owner"
-                  onChange={e => setForm({ ...form, DataOwnerId: Number(e.target.value) })}
-                >
-                  <MenuItem value="">None</MenuItem>
-                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
-                </Select>
-              </FormControl>
+              <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               <TextField
                 label="Remarks"
                 size="small"

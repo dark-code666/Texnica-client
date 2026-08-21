@@ -28,9 +28,20 @@ api.interceptors.request.use(
         }
 
         if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+          const storedUser = localStorage.getItem('user');
+          const user = storedUser ? JSON.parse(storedUser) : null;
+          const isUserCreation = config.url?.endsWith('/auth/users') === true;
           config.data = {
             ...config.data,
-            CustomerId: config.data.CustomerId || customer.id,
+            ...(!isUserCreation && Object.prototype.hasOwnProperty.call(config.data, 'CustomerId')
+              ? { CustomerId: config.data.CustomerId || customer.id }
+              : {}),
+            ...(Object.prototype.hasOwnProperty.call(config.data, 'DataOwnerId') && user?.id
+              ? { DataOwnerId: Number(user.id) }
+              : {}),
+            ...(Object.prototype.hasOwnProperty.call(config.data, 'DataOwner') && user?.userName
+              ? { DataOwner: user.userName }
+              : {}),
           };
         }
       }
@@ -72,6 +83,9 @@ export const userRoleApi = {
 // Users API
 export const usersApi = {
   getAll: () => api.get('/auth/users'),
+  update: (id: number, data: any) => api.put(`/auth/users/${id}`, data),
+  resetPassword: (id: number, newPassword?: string) => api.post(`/auth/users/${id}/reset-password`, { newPassword }),
+  setActive: (id: number, active: boolean) => api.patch(`/auth/users/${id}/active`, { active }),
 };
 
 
@@ -549,8 +563,9 @@ export const authApi = {
     api.post('/auth/register', { userName, userEmail, password }),
   getPublicKey: () => api.get('/auth/public-key'),
   getLoginCustomers: () => api.get('/auth/login-customers'),
-  createUser: (userName: string, userEmail: string) => 
-    api.post('/auth/users', { userName, userEmail, password: 'inicio' }),
+  getLoginProfile: (userName: string) => api.get('/auth/login-profile', { params: { userName } }),
+  createUser: (userName: string, userEmail: string, userType: string, customerId?: number) =>
+    api.post('/auth/users', { userName, userEmail, userType, customerId, password: 'inicio' }),
   changePassword: (currentPassword: string, newPassword: string) => 
     api.post('/auth/change-password', { currentPassword, newPassword }),
   changePasswordFirstLogin: (newPassword: string) => 

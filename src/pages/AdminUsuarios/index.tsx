@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, TextField, Select, MenuItem, FormControl, InputLabel, Paper, Chip, CircularProgress, Alert, Snackbar
+  Button, TextField, Select, MenuItem, FormControl, InputLabel, Paper, Chip, CircularProgress, Alert, Snackbar,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { useAdminUsuarios } from '../../hooks/AdminUsuarios/useAdminUsuarios';
@@ -10,6 +11,7 @@ const AdminUsuarios: React.FC = () => {
   const {
     users,
     roles,
+    customers,
     loading,
     error,
     newUser,
@@ -19,7 +21,36 @@ const AdminUsuarios: React.FC = () => {
     setSnackbar,
     handleCreateUser,
     handleAssignRole,
+    handleUpdateUser,
+    handleResetPassword,
+    handleSetActive,
   } = useAdminUsuarios();
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editForm, setEditForm] = useState<any>({});
+
+  const openEdit = (user: any) => {
+    setEditingUser(user);
+    setEditForm({ userName: user.userName, userEmail: user.userEmail, userType: user.userType || 'Employee', customerId: user.customerId || 0, roleId: user.roleId || '' });
+  };
+
+  const saveEdit = async () => {
+    try { await handleUpdateUser(editingUser.id, editForm); setEditingUser(null); }
+    catch (err: any) { setSnackbar(err?.response?.data?.message || 'Error updating user.'); }
+  };
+
+  const resetPassword = async (user: any) => {
+    const password = window.prompt('New password (leave blank to use "inicio"):');
+    if (password === null) return;
+    try { await handleResetPassword(user.id, password || undefined); }
+    catch (err: any) { setSnackbar(err?.response?.data?.message || 'Error resetting password.'); }
+  };
+
+  const toggleActive = async (user: any) => {
+    const action = user.active ? 'deactivate' : 'activate';
+    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
+    try { await handleSetActive(user.id, !user.active); }
+    catch (err: any) { setSnackbar(err?.response?.data?.message || 'Error changing user status.'); }
+  };
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -42,6 +73,21 @@ const AdminUsuarios: React.FC = () => {
               {roles.map(r => <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>)}
             </Select>
           </FormControl>
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel>User Type</InputLabel>
+            <Select label="User Type" value={newUser.userType} onChange={e => setNewUser({ ...newUser, userType: e.target.value as 'Employee' | 'Client', customerId: 0 })}>
+              <MenuItem value="Employee">Employee</MenuItem>
+              <MenuItem value="Client">Client</MenuItem>
+            </Select>
+          </FormControl>
+          {newUser.userType === 'Client' && (
+            <FormControl size="small" required sx={{ minWidth: 220 }}>
+              <InputLabel>Customer</InputLabel>
+              <Select label="Customer" value={newUser.customerId || ''} onChange={e => setNewUser({ ...newUser, customerId: Number(e.target.value) })}>
+                {customers.map(customer => <MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>)}
+              </Select>
+            </FormControl>
+          )}
           <Button type="submit" variant="contained" color="primary">New User</Button>
         </Box>
 
@@ -56,6 +102,7 @@ const AdminUsuarios: React.FC = () => {
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Email</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Type / Customer</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Actions</TableCell>
               </TableRow>
@@ -79,12 +126,17 @@ const AdminUsuarios: React.FC = () => {
                       </Select>
                     </FormControl>
                   </TableCell>
+                  <TableCell>{user.userType} {user.customerName ? ` / ${user.customerName}` : ''}</TableCell>
                   <TableCell>
                     <Chip label={user.active ? 'Active' : 'Inactive'} color={user.active ? 'success' : 'default'} size="small" variant="outlined" />
                   </TableCell>
 
                   <TableCell>
-                    <Button size="small" variant="outlined">Edit</Button>
+                    <Button size="small" variant="outlined" onClick={() => openEdit(user)}>Edit</Button>{' '}
+                    <Button size="small" variant="outlined" onClick={() => resetPassword(user)}>Reset Password</Button>{' '}
+                    <Button size="small" color={user.active ? 'error' : 'success'} onClick={() => toggleActive(user)}>
+                      {user.active ? 'Deactivate' : 'Activate'}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -92,6 +144,18 @@ const AdminUsuarios: React.FC = () => {
           </Table>
         </TableContainer>
       </Paper>
+
+      <Dialog open={!!editingUser} onClose={() => setEditingUser(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit User</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <TextField label="Username" value={editForm.userName || ''} onChange={e => setEditForm({ ...editForm, userName: e.target.value })} required />
+          <TextField label="Email" type="email" value={editForm.userEmail || ''} onChange={e => setEditForm({ ...editForm, userEmail: e.target.value })} required />
+          <FormControl size="small"><InputLabel>User Type</InputLabel><Select label="User Type" value={editForm.userType || 'Employee'} onChange={e => setEditForm({ ...editForm, userType: e.target.value, customerId: 0 })}><MenuItem value="Employee">Employee</MenuItem><MenuItem value="Client">Client</MenuItem></Select></FormControl>
+          {editForm.userType === 'Client' && <FormControl size="small" required><InputLabel>Customer</InputLabel><Select label="Customer" value={editForm.customerId || ''} onChange={e => setEditForm({ ...editForm, customerId: Number(e.target.value) })}>{customers.map(customer => <MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>)}</Select></FormControl>}
+          <FormControl size="small"><InputLabel>Role</InputLabel><Select label="Role" value={editForm.roleId || ''} onChange={e => setEditForm({ ...editForm, roleId: Number(e.target.value) })}>{roles.map(role => <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>)}</Select></FormControl>
+        </DialogContent>
+        <DialogActions><Button onClick={() => setEditingUser(null)}>Cancel</Button><Button variant="contained" onClick={saveEdit}>Save</Button></DialogActions>
+      </Dialog>
 
       <Snackbar
         open={!!snackbar}

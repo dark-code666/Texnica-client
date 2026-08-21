@@ -14,6 +14,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { fgpoApi, customersApi } from '../../utils/api';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { AuthContext } from '../../context/AuthContext';
+import { getCurrentUserName } from '../../utils/session';
 
 interface Fgpo {
   ID: number;
@@ -637,15 +638,7 @@ const Fgpo: React.FC = () => {
                 onChange={e => setForm({ ...form, ProducedQty: Number(e.target.value) })}
               />
               <FormControl size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select
-                  label="Data Owner"
-                  value={form.DataOwnerId || ''}
-                  onChange={e => setForm({ ...form, DataOwnerId: Number(e.target.value) })}
-                >
-                  <MenuItem value="">None</MenuItem>
-                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
               <TextField
                 label="Remarks"

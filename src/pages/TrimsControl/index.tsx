@@ -17,6 +17,7 @@ import { useTrimsControls } from '../../hooks/trimsControls/useTrimsControls';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useSupplierOptions } from '../../hooks/suppliers/useSupplierOptions';
 import { TrimsControl } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 // Listas del Excel
 const TRIM_TYPES = ['Main Label', 'Size Label', 'Care Label', 'Hangtag', 'Thread', 'Rib', 'Shoulder Tape', 'Polybag', 'Sticker', 'Carton', 'Carton Label', 'Button', 'Zipper', 'Elastic', 'Other'];
@@ -254,7 +255,7 @@ const TrimsControlPage: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="ETA" type="date" value={form.Eta} onChange={e => setF('Eta', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Data Owner" value={form.DataOwner} onChange={e => setF('DataOwner', e.target.value)} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} /></Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>

@@ -33,6 +33,8 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<{ id: number; name: string }[]>([]);
   const [customerId, setCustomerId] = useState('');
+  const [userType, setUserType] = useState<'Employee' | 'Client' | null>(null);
+  const [profileCustomer, setProfileCustomer] = useState<{ id: number; name: string } | null>(null);
 
   React.useEffect(() => {
     authApi.getLoginCustomers()
@@ -40,10 +42,35 @@ const Login: React.FC = () => {
       .catch(() => setError('No se pudieron cargar los clientes.'));
   }, []);
 
+  const loadProfile = async () => {
+    if (!userName.trim()) {
+      setUserType(null);
+      setProfileCustomer(null);
+      setCustomerId('');
+      return;
+    }
+    try {
+      const res = await authApi.getLoginProfile(userName.trim());
+      const profile = res.data;
+      setUserType(profile.userType);
+      if (profile.userType === 'Client' && profile.customerId) {
+        const assigned = { id: profile.customerId, name: profile.customerName };
+        setProfileCustomer(assigned);
+        setCustomerId(String(assigned.id));
+      } else {
+        setProfileCustomer(null);
+        setCustomerId('');
+      }
+    } catch {
+      setUserType(null);
+      setProfileCustomer(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!customerId) {
+    if (userType !== 'Client' && !customerId) {
       setError('Selecciona un cliente para continuar.');
       return;
     }
@@ -56,7 +83,7 @@ const Login: React.FC = () => {
       const res = await api.post('/auth/login', {
         userName,
         encryptedPassword,
-        customerId: Number(customerId),
+        customerId: customerId ? Number(customerId) : 0,
       });
       login(res.data.token, res.data.user);
       navigate('/');
@@ -146,7 +173,13 @@ const Login: React.FC = () => {
             fullWidth
             required
             value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            onChange={(e) => {
+              setUserName(e.target.value);
+              setUserType(null);
+              setProfileCustomer(null);
+              setCustomerId('');
+            }}
+            onBlur={loadProfile}
             sx={{ mb: 2.5 }}
             autoComplete="username"
             autoFocus
@@ -174,21 +207,25 @@ const Login: React.FC = () => {
             }}
           />
 
-          <FormControl fullWidth required sx={{ mb: 2.5 }}>
-            <InputLabel id="customer-label">Customer</InputLabel>
-            <Select
-              labelId="customer-label"
-              label="Cliente"
-              value={customerId}
-              onChange={(e) => setCustomerId(e.target.value)}
-            >
-              {customers.map((customer) => (
-                <MenuItem key={customer.id} value={customer.id}>
-                  {customer.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {userType === 'Client' && profileCustomer ? (
+            <TextField fullWidth label="Customer" value={profileCustomer.name} slotProps={{ input: { readOnly: true } }} sx={{ mb: 2.5 }} />
+          ) : userType === 'Employee' ? (
+            <FormControl fullWidth required sx={{ mb: 2.5 }}>
+              <InputLabel id="customer-label">Customer</InputLabel>
+              <Select
+                labelId="customer-label"
+                label="Cliente"
+                value={customerId}
+                onChange={(e) => setCustomerId(e.target.value)}
+              >
+                {customers.map((customer) => (
+                  <MenuItem key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : null}
 
           <Button
             type="submit"

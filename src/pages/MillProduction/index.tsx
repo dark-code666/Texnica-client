@@ -19,6 +19,7 @@ import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { MillProduction } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 const DEFAULT_STATUS_OPTIONS = ['Not Started', 'Pending', 'In Progress', 'Partially Completed', 'Completed', 'On Hold', 'Cancelled'];
 
@@ -287,11 +288,7 @@ const MillProductionPage: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
 

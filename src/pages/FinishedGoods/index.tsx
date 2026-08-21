@@ -17,6 +17,7 @@ import { useFinishedGoods } from '../../hooks/finishedGoods/useFinishedGoods';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FinishedGood } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 const STATUS_OPTIONS = ['Pending', 'Received', 'Reserved', 'Ready to Ship', 'Partially Shipped', 'Shipped', 'On Hold', 'Cancelled'];
 
@@ -229,11 +230,7 @@ const FinishedGoodsPage: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>

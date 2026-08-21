@@ -19,6 +19,7 @@ import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
 import { useCatalogs } from '../../hooks/catalogs/useCatalogs';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FabricShipment } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 const DEFAULT_SHIPMENT_STATUSES = ['Planned', 'Booking Confirmed', 'Exported', 'In Transit', 'Delivered', 'Cancelled'];
 const DEFAULT_UOMS = ['Yards', 'Meters', 'Kilograms', 'Pounds', 'Rolls', 'Pieces'];
@@ -270,11 +271,7 @@ const FabricShipmentPage: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth size="small" label="Delivered to Texnica Date" type="date" value={form.DeliveredToTexnicaDate} onChange={e => setF('DeliveredToTexnicaDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Remarks / Notes" value={form.Remarks} onChange={e => setF('Remarks', e.target.value)} multiline rows={2} /></Grid>

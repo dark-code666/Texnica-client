@@ -18,6 +18,7 @@ import { useFabricPOOptions } from '../../hooks/fabricPOs/useFabricPOOptions';
 import { useLotOptions } from '../../hooks/lots/useLotOptions';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { FabricInventory } from '../../types';
+import { getCurrentUserName } from '../../utils/session';
 
 const INVENTORY_STATUS = ['Available', 'On Hold', 'Shortage', 'Closed'];
 
@@ -253,11 +254,7 @@ const FabricInventoryPage: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>Data Owner</InputLabel>
-                <Select value={form.DataOwnerId || ''} label="Data Owner" onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Last Updated" type="date" value={form.LastUpdated} onChange={e => setF('LastUpdated', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>

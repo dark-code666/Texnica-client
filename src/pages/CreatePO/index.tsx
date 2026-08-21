@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { fgpoApi, customersApi } from '../../utils/api';
 import { useUserOptions } from '../../hooks/users/useUserOptions';
+import { getCurrentUserName } from '../../utils/session';
 import { AuthContext } from '../../context/AuthContext';
 
 const STATUS_OPTIONS = [
@@ -128,11 +129,7 @@ const CreatePO: React.FC = () => {
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth size="medium">
-                <InputLabel>Data Owner</InputLabel>
-                <Select label="Data Owner" value={form.DataOwnerId || ''} onChange={e => setF('DataOwnerId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map(u => <MenuItem key={u.id} value={u.id}>{u.label}</MenuItem>)}
-                </Select>
+                <TextField label="Data Owner" value={getCurrentUserName()} slotProps={{ input: { readOnly: true } }} />
               </FormControl>
             </Grid>
             <Grid size={{ xs: 12 }}>

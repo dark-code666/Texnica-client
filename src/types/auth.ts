@@ -24,6 +24,7 @@ export interface User {
   mustChangePassword: boolean;
   customerId?: number;
   customerName?: string;
+  userType: 'Employee' | 'Client';
   active: boolean;
   createdAt: string;
   updatedAt?: string;
