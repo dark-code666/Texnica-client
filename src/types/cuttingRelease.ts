@@ -3,6 +3,10 @@
 export interface CuttingRelease {
   id: number;
   releaseNumber: string;
+  cutDate: string;
+  week: number;
+  section: string;
+  group: number;
   releaseDate: string;
   fgpoId: number;
   fgpoNumber: string;
@@ -10,6 +14,26 @@ export interface CuttingRelease {
   style?: string;
   color?: string;
   fabricLot?: string;
+  fabricDescription?: string;
+  layers: number;
+  piecesBySize?: Record<string, number>;
+  total: number;
+  bodyBySize?: Record<string, number>;
+  rolls: number;
+  ydsPackingList: number;
+  physicalYards: number;
+  short: number;
+  percentShort: number;
+  fDamage: number;
+  percentDamage: number;
+  overlaps: number;
+  pcsPerMarker: number;
+  totalYds: number;
+  markerLength: number;
+  markerYield: number;
+  realYield: number;
+  width: number;
+  efficiency: number;
   approvedCutQty: number;
   approvedWidth: number;
   markerNumber?: string;
@@ -27,9 +51,33 @@ export interface CuttingRelease {
 }
 
 export interface CreateCuttingReleaseInput {
+  cutDate: string;
+  week: number;
+  section: string;
+  group: number;
   releaseDate: string;
   fgpoId: number;
   fabricLot?: string;
+  fabricDescription?: string;
+  layers: number;
+  piecesBySize?: Record<string, number>;
+  total: number;
+  bodyBySize?: Record<string, number>;
+  rolls: number;
+  ydsPackingList: number;
+  physicalYards: number;
+  short: number;
+  percentShort: number;
+  fDamage: number;
+  percentDamage: number;
+  overlaps: number;
+  pcsPerMarker: number;
+  totalYds: number;
+  markerLength: number;
+  markerYield: number;
+  realYield: number;
+  width: number;
+  efficiency: number;
   approvedCutQty: number;
   approvedWidth: number;
   markerNumber?: string;
