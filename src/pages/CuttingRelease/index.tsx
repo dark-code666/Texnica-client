@@ -1,7 +1,7 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Button, TextField, Paper, Chip, CircularProgress, Alert, Dialog, DialogTitle,
+  Button, TextField, Paper, CircularProgress, Alert, Dialog, DialogTitle,
   DialogContent, DialogActions, IconButton, InputAdornment, MenuItem,
   FormControl, InputLabel, TablePagination, Grid, Select, Divider
 } from '@mui/material';
@@ -15,27 +15,14 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useCuttingReleases } from '../../hooks/cuttingReleases/useCuttingReleases';
 import { useFgpoOptions } from '../../hooks/fgpos/useFgpoOptions';
-import { useUserOptions } from '../../hooks/users/useUserOptions';
 import { fgpoLinesApi, stylesApi } from '../../utils/api';
 import { CuttingRelease } from '../../types';
-
-// Listas del Excel
-const PRR_OPTIONS = ['Ready', 'Ready with Conditions', 'Not Ready', 'Blocked'];
-const STATUS_OPTIONS = ['Pending', 'Approved', 'Rejected', 'On Hold', 'Cancelled'];
 
 const getWeek = (date: string) => {
   const value = new Date(`${date}T00:00:00`);
   if (Number.isNaN(value.getTime())) return 0;
   const start = new Date(value.getFullYear(), 0, 1);
   return Math.ceil((((value.getTime() - start.getTime()) / 86400000) + start.getDay() + 1) / 7);
-};
-
-const sc = (s: string) => {
-  const m: Record<string, any> = {
-    Approved: 'success', Ready: 'success', 'Ready with Conditions': 'info',
-    Rejected: 'error', Blocked: 'error', 'Not Ready': 'warning', 'On Hold': 'warning', Pending: 'warning', Cancelled: 'default',
-  };
-  return m[s] ?? 'default';
 };
 
 const emptyForm = {
@@ -45,9 +32,7 @@ const emptyForm = {
   Width: 0, Efficiency: 0,
   ReleaseDate: new Date().toISOString().split('T')[0],
   FGPOId: 0, FabricLot: '',
-  ApprovedCutQty: 0, ApprovedWidth: 0, MarkerNumber: '', ApprovedYield: 0,
-  PrrResult: 'Ready', ReleasedByUserId: 0, ReviewedByUserId: 0,
-  Exception: '', Conditions: '', ReleaseStatus: 'Pending', Comments: '',
+  Comments: '',
 };
 
 const CuttingReleasePage: React.FC = () => {
@@ -64,14 +49,14 @@ const CuttingReleasePage: React.FC = () => {
   const [viewItem, setViewItem] = useState<CuttingRelease | null>(null);
   const [formError, setFormError] = useState('');
   const [sizeCodes, setSizeCodes] = useState<string[]>([]);
+  const [styleCode, setStyleCode] = useState('');
+  const [colorCode, setColorCode] = useState('');
   const [fabricDescription, setFabricDescription] = useState('');
 
   const { options: fgpoList } = useFgpoOptions();
-  const { options: userList } = useUserOptions();
 
   const [form, setForm] = useState(emptyForm);
 
-  const selectedFgpo = fgpoList.find((option: any) => Number(option.id ?? option.ID) === form.FGPOId);
   const piecesBySize = Object.fromEntries(sizeCodes.map(size => [size, (form.BodyBySize[size] || 0) * form.Layers]));
   const total = Object.values(piecesBySize).reduce((sum, value) => sum + value, 0);
   const pcsPerMarker = Object.values(form.BodyBySize).reduce((sum, value) => sum + (Number(value) || 0), 0);
@@ -84,16 +69,22 @@ const CuttingReleasePage: React.FC = () => {
   const realYield = total ? physicalYards / total : 0;
 
   useEffect(() => {
-    if (!form.FGPOId) { setSizeCodes([]); return; }
+    if (!form.FGPOId) { setSizeCodes([]); setStyleCode(''); setColorCode(''); setFabricDescription(''); return; }
     Promise.all([fgpoLinesApi.getByFgpo(form.FGPOId), stylesApi.getAll()]).then(([linesResponse, stylesResponse]) => {
       const lines = linesResponse.data ?? [];
-      const styleCode = selectedFgpo?.meta?.style;
-      const matchingLines = styleCode ? lines.filter((line: any) => (line.styleCode ?? line.StyleCode) === styleCode) : lines;
-      setSizeCodes([...new Set(matchingLines.map((line: any) => line.sizeCode ?? line.SizeCode).filter(Boolean))]);
-      const style = (stylesResponse.data ?? []).find((item: any) => (item.styleCode ?? item.StyleCode) === styleCode);
+      const firstLine = lines.find((line: any) => (line.active ?? line.Active) !== false) ?? lines[0];
+      const st = (firstLine?.styleCode ?? firstLine?.StyleCode ?? '').toString();
+      const col = (firstLine?.colorName ?? firstLine?.ColorName ?? '').toString();
+      setStyleCode(st);
+      setColorCode(col);
+      const sizeList: string[] = lines
+        .map((line: any) => line.sizeCode ?? line.SizeCode)
+        .filter((c: any): c is string => typeof c === 'string' && c.length > 0);
+      setSizeCodes([...new Set(sizeList)]);
+      const style = (stylesResponse.data ?? []).find((item: any) => (item.styleCode ?? item.StyleCode) === st);
       setFabricDescription(style?.fabricDescription ?? style?.FabricDescription ?? '');
-    }).catch(() => { setSizeCodes([]); setFabricDescription(''); });
-  }, [form.FGPOId, selectedFgpo?.meta?.style]);
+    }).catch(() => { setSizeCodes([]); setStyleCode(''); setColorCode(''); setFabricDescription(''); });
+  }, [form.FGPOId]);
 
   const handleSearch = (e: FormEvent) => { e.preventDefault(); setSearchQuery(searchInput); };
   const handleClearSearch = () => setSearchInput('');
@@ -110,11 +101,6 @@ const CuttingReleasePage: React.FC = () => {
       MarkerLength: item.markerLength || 0, Width: item.width || 0, Efficiency: item.efficiency || 0,
       ReleaseDate: item.releaseDate?.split('T')[0] || '',
       FGPOId: item.fgpoId, FabricLot: item.fabricLot ?? '',
-      ApprovedCutQty: item.approvedCutQty, ApprovedWidth: item.approvedWidth,
-      MarkerNumber: item.markerNumber ?? '', ApprovedYield: item.approvedYield,
-      PrrResult: item.prrResult || 'Ready', ReleasedByUserId: userList.find(o => o.label === item.releasedBy)?.id ?? 0,
-      ReviewedByUserId: userList.find(o => o.label === item.reviewedBy)?.id ?? 0, Exception: item.exception ?? '',
-      Conditions: item.conditions ?? '', ReleaseStatus: item.releaseStatus || 'Pending',
       Comments: item.comments ?? '',
     });
     setFormError(''); setDialogOpen(true);
@@ -137,8 +123,6 @@ const CuttingReleasePage: React.FC = () => {
         PiecesBySize: piecesBySize, Total: total, PhysicalYards: physicalYards,
         Short: short, PercentShort: percentShort, PercentDamage: percentDamage,
         PcsPerMarker: pcsPerMarker, TotalYds: totalYds, MarkerYield: markerYield, RealYield: realYield,
-        ReleasedByUserId: form.ReleasedByUserId || null,
-        ReviewedByUserId: form.ReviewedByUserId || null,
         ReleaseDate: form.ReleaseDate ? new Date(form.ReleaseDate).toISOString() : new Date().toISOString(),
       };
       if (editingId) await update(editingId, payload);
@@ -159,7 +143,7 @@ const CuttingReleasePage: React.FC = () => {
             Cutting Release
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Liberación del tendido y corte — aprueba marcador, rendimiento y cantidad
+            Producción del tendido — corte por lote con tallas y rendimientos
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -172,7 +156,7 @@ const CuttingReleasePage: React.FC = () => {
 
       <Paper sx={{ mb: 2, p: 1.5, display: 'flex', gap: 1 }}>
         <Box component="form" onSubmit={handleSearch} sx={{ display: 'flex', gap: 1, flex: 1 }}>
-          <TextField size="small" placeholder="Search by Release #, FGPO, Fabric Lot, Marker, Status..."
+          <TextField size="small" placeholder="Search by Release #, FGPO, Fabric Lot, Section..."
             value={searchInput} onChange={e => setSearchInput(e.target.value)}
             slotProps={{
               input: {
@@ -266,8 +250,8 @@ const CuttingReleasePage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Style" value={selectedFgpo?.meta?.style || ''} slotProps={{ input: { readOnly: true } }} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Color" value={selectedFgpo?.meta?.color || ''} slotProps={{ input: { readOnly: true } }} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Style" value={styleCode} slotProps={{ input: { readOnly: true } }} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Color" value={colorCode} slotProps={{ input: { readOnly: true } }} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Fabric Description" value={fabricDescription} slotProps={{ input: { readOnly: true } }} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Release Date *" type="date" value={form.ReleaseDate} onChange={e => setF('ReleaseDate', e.target.value)} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Fabric Lot" value={form.FabricLot} onChange={e => setF('FabricLot', e.target.value)} /></Grid>
@@ -291,48 +275,6 @@ const CuttingReleasePage: React.FC = () => {
               ['Physical Yards', physicalYards], ['Short', short], ['% Short', percentShort], ['% Damage', percentDamage],
               ['PCS / Marker', pcsPerMarker], ['Total Yds', totalYds], ['Marker Yield', markerYield], ['Real Yield', realYield],
             ].map(([label, value]) => <Grid size={{ xs: 6, sm: 3, md: 2 }} key={label as string}><TextField fullWidth size="small" label={label as string} value={Number(value).toFixed(3)} slotProps={{ input: { readOnly: true } }} /></Grid>)}
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Approved Cut Qty" type="number" value={form.ApprovedCutQty || ''} onChange={e => setF('ApprovedCutQty', Number(e.target.value))} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Approved Width" type="number" value={form.ApprovedWidth || ''} onChange={e => setF('ApprovedWidth', Number(e.target.value))} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Marker Number" value={form.MarkerNumber} onChange={e => setF('MarkerNumber', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Approved Yield" type="number" value={form.ApprovedYield || ''} onChange={e => setF('ApprovedYield', Number(e.target.value))} /></Grid>
-
-            <Grid size={{ xs: 12 }}><Divider><Typography variant="caption" color="text.secondary">Aprobación & Liberación</Typography></Divider></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>PRR Result</InputLabel>
-                <Select value={form.PrrResult} label="PRR Result" onChange={e => setF('PrrResult', e.target.value)}>
-                  {PRR_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Release Status</InputLabel>
-                <Select value={form.ReleaseStatus} label="Release Status" onChange={e => setF('ReleaseStatus', e.target.value)}>
-                  {STATUS_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Released By</InputLabel>
-                <Select value={form.ReleasedByUserId || ''} label="Released By" onChange={e => setF('ReleasedByUserId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Reviewed By</InputLabel>
-                <Select value={form.ReviewedByUserId || ''} label="Reviewed By" onChange={e => setF('ReviewedByUserId', Number(e.target.value))}>
-                  <MenuItem value=""><em>Select a User...</em></MenuItem>
-                  {userList.map((o) => <MenuItem key={o.id} value={o.id}>{o.label}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Exception" value={form.Exception} onChange={e => setF('Exception', e.target.value)} /></Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}><TextField fullWidth size="small" label="Conditions" value={form.Conditions} onChange={e => setF('Conditions', e.target.value)} /></Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth size="small" label="Comments" value={form.Comments} onChange={e => setF('Comments', e.target.value)} multiline rows={2} /></Grid>
           </Grid>
         </DialogContent>
@@ -353,20 +295,21 @@ const CuttingReleasePage: React.FC = () => {
               <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Release Number</Typography><Typography sx={{ fontWeight: 600 }}>{viewItem.releaseNumber}</Typography></Grid>
               <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">FGPO</Typography><Typography sx={{ fontWeight: 600 }}>{viewItem.fgpoNumber} ({viewItem.customerName})</Typography></Grid>
               <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Style / Color</Typography><Typography>{viewItem.style || '-'} / {viewItem.color || '-'}</Typography></Grid>
-              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Release Date</Typography><Typography>{fmt(viewItem.releaseDate)}</Typography></Grid>
-              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Fabric Lot</Typography><Typography>{viewItem.fabricLot || '-'}</Typography></Grid>
+              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Fabric Description</Typography><Typography>{viewItem.fabricDescription || '-'}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Cut Date</Typography><Typography>{fmt(viewItem.cutDate)}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Section / Group</Typography><Typography>{viewItem.section || '-'} / {viewItem.group}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Fabric Lot</Typography><Typography>{viewItem.fabricLot || '-'}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Layers</Typography><Typography>{viewItem.layers}</Typography></Grid>
               <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Approved Cut Qty</Typography><Typography>{viewItem.approvedCutQty}</Typography></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Approved Width</Typography><Typography>{viewItem.approvedWidth}</Typography></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Marker</Typography><Typography>{viewItem.markerNumber || '-'}</Typography></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Approved Yield</Typography><Typography>{viewItem.approvedYield}</Typography></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">PRR Result</Typography><Chip label={viewItem.prrResult || '-'} size="small" color={sc(viewItem.prrResult ?? '')} /></Grid>
-              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Release Status</Typography><Chip label={viewItem.releaseStatus || '-'} size="small" color={sc(viewItem.releaseStatus ?? '')} /></Grid>
-              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Released By</Typography><Typography>{viewItem.releasedBy || '-'}</Typography></Grid>
-              <Grid size={{ xs: 12, sm: 6 }}><Typography variant="caption" color="text.secondary">Reviewed By</Typography><Typography>{viewItem.reviewedBy || '-'}</Typography></Grid>
-              {viewItem.exception && <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /><Typography variant="caption" color="text.secondary">Exception</Typography><Typography>{viewItem.exception}</Typography></Grid>}
-              {viewItem.conditions && <Grid size={{ xs: 12 }}><Typography variant="caption" color="text.secondary">Conditions</Typography><Typography>{viewItem.conditions}</Typography></Grid>}
-              {viewItem.comments && <Grid size={{ xs: 12 }}><Typography variant="caption" color="text.secondary">Comments</Typography><Typography>{viewItem.comments}</Typography></Grid>}
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Total</Typography><Typography>{viewItem.total}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Rolls</Typography><Typography>{viewItem.rolls}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Yds Packing List</Typography><Typography>{viewItem.ydsPackingList}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Physical Yards</Typography><Typography>{viewItem.physicalYards.toFixed(3)}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Short</Typography><Typography>{viewItem.short.toFixed(3)}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Marker Length</Typography><Typography>{viewItem.markerLength}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Width</Typography><Typography>{viewItem.width}</Typography></Grid>
+              <Grid size={{ xs: 6, sm: 3 }}><Typography variant="caption" color="text.secondary">Effi</Typography><Typography>{viewItem.efficiency}%</Typography></Grid>
+              {viewItem.comments && <Grid size={{ xs: 12 }}><Divider sx={{ my: 0.5 }} /><Typography variant="caption" color="text.secondary">Comments</Typography><Typography>{viewItem.comments}</Typography></Grid>}
             </Grid>
           )}
         </DialogContent>

@@ -34,16 +34,6 @@ export interface CuttingRelease {
   realYield: number;
   width: number;
   efficiency: number;
-  approvedCutQty: number;
-  approvedWidth: number;
-  markerNumber?: string;
-  approvedYield: number;
-  prrResult?: string;
-  releasedBy?: string;
-  reviewedBy?: string;
-  exception?: string;
-  conditions?: string;
-  releaseStatus?: string;
   comments?: string;
   active: boolean;
   createdAt: string;
@@ -78,15 +68,5 @@ export interface CreateCuttingReleaseInput {
   realYield: number;
   width: number;
   efficiency: number;
-  approvedCutQty: number;
-  approvedWidth: number;
-  markerNumber?: string;
-  approvedYield: number;
-  prrResult?: string;
-  releasedBy?: string;
-  reviewedBy?: string;
-  exception?: string;
-  conditions?: string;
-  releaseStatus?: string;
   comments?: string;
 }
